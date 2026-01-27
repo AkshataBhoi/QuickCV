@@ -61,17 +61,15 @@ export function Pricing() {
     const [selectedPlan, setSelectedPlan] = useState("basic");
 
     return (
-        <section id="pricing" className="relative w-full overflow-hidden bg-background py-20 md:py-32">
-
-            <div className="container relative z-10 px-4 md:px-6 mx-auto max-w-7xl">
-                {/* Heading */}
-                <div className="text-center mb-16 space-y-4">
+        <section id="pricing" className="relative w-full overflow-hidden bg-gray-50 py-20 md:py-32">
+            <div className="container relative z-10 mx-auto max-w-7xl px-4 md:px-6">
+                <div className="mb-12 space-y-3 text-center">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight"
+                        className="text-sm font-semibold uppercase tracking-wide text-indigo-600"
                     >
                         Our Professional Pricing
                     </motion.h2>
@@ -80,14 +78,17 @@ export function Pricing() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto"
+                        className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl"
                     >
-                        One-time purchase for lifetime access.
+                        Simple, transparent plans for every stage of your search
                     </motion.p>
+                    <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
+                        Pick the plan that matches how actively you&apos;re applying. All plans
+                        include AI resume analysis and recruiter-style feedback.
+                    </p>
                 </div>
 
-                {/* Pricing Cards */}
-                <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+                <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3 lg:gap-8">
                     {pricingPlans.map((plan, index) => {
                         const Icon = plan.icon;
                         const isSelected = selectedPlan === plan.id;
@@ -102,10 +103,9 @@ export function Pricing() {
                                 transition={{ duration: 0.5, delay: index * 0.15 }}
                                 className="relative"
                             >
-                                {/* Most Popular Badge */}
                                 {plan.badge && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                                        <span className="bg-cyan-500 text-black text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                                    <div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2">
+                                        <span className="rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-md">
                                             {plan.badge}
                                         </span>
                                     </div>
@@ -116,47 +116,46 @@ export function Pricing() {
                                     transition={{ type: "spring", stiffness: 300 }}
                                     onClick={() => setSelectedPlan(plan.id)}
                                     className={`
-                                        relative h-full bg-[#1a1f2e] rounded-2xl p-6 cursor-pointer
-                                        border-2 transition-all duration-300
+                                        relative h-full cursor-pointer rounded-2xl border-2 bg-white p-6
+                                        transition-all duration-300
                                         ${isSelected
-                                            ? 'border-cyan-500 shadow-2xl shadow-cyan-500/20'
-                                            : 'border-slate-700/50 hover:border-slate-600'
+                                            ? "border-indigo-500 shadow-xl shadow-indigo-100"
+                                            : "border-gray-200 hover:border-gray-300 hover:shadow-md"
                                         }
-                                        ${isPro ? 'bg-gradient-to-br from-[#1a1f2e] to-[#0f172a]' : ''}
+                                        ${isPro ? "bg-indigo-50/70" : ""}
                                     `}
                                 >
-                                    {/* Icon */}
                                     <div className="mb-6">
-                                        <div className={`inline-flex p-3 rounded-lg ${isPro ? 'bg-cyan-500/10' : 'bg-slate-800'}`}>
-                                            <Icon className={`w-8 h-8 ${isPro ? 'text-cyan-400' : 'text-slate-400'}`} />
+                                        <div className={`inline-flex rounded-lg p-3 ${isPro ? "bg-indigo-100" : "bg-gray-100"}`}>
+                                            <Icon className={`h-8 w-8 ${isPro ? "text-indigo-600" : "text-gray-500"}`} />
                                         </div>
                                     </div>
 
-                                    {/* Plan Name */}
-                                    <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                                    <p className="text-sm text-slate-400 mb-6">{plan.description}</p>
+                                    <h3 className="mb-1 text-lg font-semibold text-gray-900">{plan.name}</h3>
+                                    <p className="mb-6 text-sm text-gray-500">{plan.description}</p>
 
-                                    {/* Price */}
                                     <div className="mb-6">
                                         {plan.price !== null ? (
-                                            <div className="flex items-end gap-2">
-                                                <span className="text-5xl font-bold text-white">
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-3xl font-semibold text-gray-900">
                                                     ${plan.price}
                                                 </span>
                                                 {plan.originalPrice && (
-                                                    <span className="text-xl text-slate-500 line-through mb-2">
+                                                    <span className="text-xs text-gray-400 line-through">
                                                         ${plan.originalPrice}
                                                     </span>
                                                 )}
+                                                <span className="text-xs text-gray-500">
+                                                    {plan.id === "basic" ? "one-time" : "per month"}
+                                                </span>
                                             </div>
                                         ) : (
-                                            <div className="text-3xl font-bold text-white">
+                                            <div className="text-2xl font-semibold text-gray-900">
                                                 Contact Us
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* CTA Button */}
                                     <Button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -168,11 +167,11 @@ export function Pricing() {
                                             }
                                         }}
                                         className={`
-                                            w-full h-12 text-sm font-bold rounded-lg mb-6
+                                            mb-6 h-11 w-full rounded-full text-sm font-semibold
                                             transition-all duration-300
                                             ${isPro
-                                                ? 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-lg shadow-cyan-500/20'
-                                                : 'bg-white hover:bg-slate-100 text-black'
+                                                ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
+                                                : "border border-gray-300 bg-white text-gray-900 hover:bg-gray-50"
                                             }
                                         `}
                                     >
@@ -182,46 +181,51 @@ export function Pricing() {
                                         </span>
                                     </Button>
 
-                                    {/* Features */}
-                                    <div className="space-y-3 pt-6 border-t border-slate-700/50">
-                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                                            {plan.id === "basic" ? "Core Features:" : plan.id === "pro" ? "Everything in Starter, plus:" : "Everything in Pro, plus:"}
+                                    <div className="space-y-3 border-t border-gray-200 pt-6">
+                                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                            {plan.id === "basic"
+                                                ? "Core features"
+                                                : plan.id === "pro"
+                                                    ? "Everything in Starter, plus"
+                                                    : "Everything in Pro, plus"}
                                         </p>
                                         {plan.features.map((feature, idx) => (
                                             <div key={idx} className="flex items-start gap-3">
                                                 {feature.included ? (
-                                                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center mt-0.5">
-                                                        <Check className="w-3 h-3 text-green-500" />
+                                                    <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-green-50">
+                                                        <Check className="h-3 w-3 text-green-600" />
                                                     </div>
                                                 ) : (
-                                                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center mt-0.5">
-                                                        <X className="w-3 h-3 text-red-500" />
+                                                    <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-100">
+                                                        <X className="h-3 w-3 text-gray-400" />
                                                     </div>
                                                 )}
-                                                <span className={`text-sm ${feature.included ? 'text-slate-300' : 'text-slate-500 line-through'}`}>
+                                                <span
+                                                    className={`text-sm ${feature.included ? "text-gray-700" : "text-gray-400 line-through"
+                                                        }`}
+                                                >
                                                     {feature.text}
                                                 </span>
                                             </div>
                                         ))}
                                     </div>
 
-                                    {/* Estimated Breakdown (Optional) */}
                                     {plan.price !== null && (
-                                        <div className="mt-6 pt-6 border-t border-slate-700/50 space-y-2">
-                                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                                                Estimated Breakdown (USD Mock)
+                                        <div className="mt-6 space-y-2 border-t border-gray-200 pt-6">
+                                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                                Example breakdown
                                             </p>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-400">Subtotal (Qty 1)</span>
-                                                <span className="text-white font-medium">${plan.price}.00</span>
+                                                <span className="text-gray-500">Subtotal</span>
+                                                <span className="font-medium text-gray-900">${plan.price}.00</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-400">Tax (0%)</span>
-                                                <span className="text-green-400 font-medium">+$0.00</span>
+                                                <span className="text-gray-500">Tax</span>
+                                                <span className="font-medium text-green-600">+$0.00</span>
                                             </div>
-                                            <div className="flex justify-between text-base font-bold pt-2 border-t border-slate-700/50">
-                                                <span className="text-white">Total</span>
-                                                <span className="text-white">${plan.price}.00</span>
+                                            <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-semibold">
+                                                <span className="text-gray-900">Total</span>
+                                                <span className="text-gray-900">${plan.price}.00</span>
                                             </div>
                                         </div>
                                     )}

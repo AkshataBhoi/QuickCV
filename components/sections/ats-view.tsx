@@ -82,7 +82,7 @@ export function AtsView() {
       "React",
       "Node.js",
       "TypeScript",
-      "AWS"
+      "AWS" 
     ],
     "experience": [
       {
@@ -97,6 +97,8 @@ export function AtsView() {
                             </div>
                         </div>
                     </div>
-                </section>
-                );
+                </div>
+            </div>
+        </section>
+    );
 }

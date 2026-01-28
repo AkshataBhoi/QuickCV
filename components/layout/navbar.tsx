@@ -4,85 +4,132 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useModal } from "@/components/providers/modal-provider";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
-    { name: "AI Resume Builder", href: "/#resume-preview" },
-    { name: "ATS Analysis", href: "/#upload" },
     { name: "Templates", href: "/#templates" },
+    { name: "Features", href: "/#features" },
+    { name: "How it Works", href: "/#how-it-works" },
     { name: "Pricing", href: "/#pricing" },
+    
 ];
 
 export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     const { openModal } = useModal();
 
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
-            <nav className="w-full max-w-7xl px-6 py-[13px] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Logo />
-                </div>
+        <header
+            className={cn(
+                "fixed top-0 left-0 right-0 z-50 h-15 transition-all duration-300 ease-in-out",
+                isScrolled
+                    ? "bg-white/95 backdrop-blur-xl border-b border-gray-100"
+                    : "bg-black/30 backdrop-blur-md"
+            )}
+        >
+            <nav className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
+                <Logo />
 
-                {/* Desktop Nav - Centered */}
-                <div className="hidden lg:flex items-center gap-8">
+                {/* Desktop Nav */}
+                <ul className="hidden lg:flex items-center gap-4">
                     {navLinks.map((link) => (
-                        <Link
-                            key={link.name}
-                            href={link.href}
-                            className="text-base font-medium text-foreground/80 transition-colors hover:text-foreground hover:text-primary"
-                        >
-                            {link.name}
-                        </Link>
+                        <li key={link.name}>
+                            <Link
+                                href={link.href}
+                                className="px-4 py-2 rounded-xl text-sm font-medium text-gray-500 hover:text-indigo-600 hover:bg-indigo-100 transition-all duration-300"
+                            >
+                                {link.name}
+                            </Link>
+                        </li>
                     ))}
-                </div>
+                </ul>
 
-                <div className="hidden lg:flex items-center gap-4">
-                    <Button
-                        onClick={openModal}
-                        aria-label="Get started with free resume builder"
-                        className="group relative h-10 rounded-xl px-8 font-semibold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:brightness-110 active:scale-95 bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_20px_rgba(6,182,212,0.5),0_4px_6px_-1px_rgba(6,182,212,0.1),inset_0_-4px_4px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_35px_rgba(6,182,212,0.7),0_8px_12px_-1px_rgba(6,182,212,0.3),inset_0_-4px_4px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.4)]"
+                <div className="hidden lg:flex items-center gap-6">
+                    {/* <Link
+                        href="/login"
+                        className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-all duration-300"
                     >
-                        <span className="flex items-center gap-2">
-                            Get Started <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
-                        </span>
-                    </Button>
+                        Login
+                    </Link> */}
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <Button
+                            onClick={openModal}
+                            className="bg-indigo-600 text-white rounded-xl px-8 py-2 font-bold hover:bg-indigo-700 transition-all duration-300"
+                        >
+                            Get Started
+                        </Button>
+                    </motion.div>
                 </div>
 
                 {/* Mobile Menu Toggle */}
                 <button
-                    className="lg:hidden p-2 text-muted-foreground hover:text-foreground"
+                    className="lg:hidden p-2 text-gray-600 hover:text-indigo-600 transition-colors focus:outline-none"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-                    aria-expanded={isMobileMenuOpen}
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>
+            </nav>
 
-                {/* Mobile Nav */}
+            {/* Mobile Nav */}
+            <AnimatePresence>
                 {isMobileMenuOpen && (
-                    <div className="absolute top-full left-0 right-0 border-t bg-background p-4 shadow-lg lg:hidden">
-                        <div className="flex flex-col gap-4">
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 overflow-hidden"
+                    >
+                        <ul className="flex flex-col p-6 gap-6">
                             {navLinks.map((link) => (
+                                <li key={link.name}>
+                                    <Link
+                                        href={link.href}
+                                        className="text-lg font-medium text-gray-600 hover:text-indigo-600 block"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        {link.name}
+                                    </Link>
+                                </li>
+                            ))}
+                            <hr className="border-gray-100" />
+                            <div className="flex flex-col gap-4">
                                 <Link
-                                    key={link.name}
-                                    href={link.href}
-                                    className="text-sm font-medium text-muted-foreground hover:text-primary"
+                                    href="/login"
+                                    className="text-lg font-medium text-gray-600 hover:text-indigo-600"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                                    {link.name}
+                                    Login
                                 </Link>
-                            ))}
-                            <div className="flex flex-col gap-2 mt-2">
-                                <div onClick={() => { setIsMobileMenuOpen(false); openModal(); }} className="cursor-pointer">
-                                    <Button className="w-full rounded-full" variant="default">Get Started</Button>
-                                </div>
+                                <Button
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        openModal();
+                                    }}
+                                    className="w-full bg-indigo-600 text-white rounded-xl py-6 text-lg font-bold"
+                                >
+                                    Get Started
+                                </Button>
                             </div>
-                        </div>
-                    </div>
+                        </ul>
+                    </motion.div>
                 )}
-            </nav>
-        </div>
+            </AnimatePresence>
+        </header>
     );
 }

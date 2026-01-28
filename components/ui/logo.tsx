@@ -8,7 +8,7 @@ interface LogoProps {
 export function Logo({ className }: LogoProps) {
     return (
         <Link href="/" className={cn("flex items-center font-bold text-2xl tracking-tight", className)}>
-            <span className="text-primary">ResuStack</span>
+            <span className="text-indigo-500">QuickCV</span>
         </Link>
     );
 }

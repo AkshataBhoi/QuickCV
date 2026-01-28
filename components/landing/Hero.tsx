@@ -6,60 +6,69 @@ import { ArrowRight, Sparkles, Star } from "lucide-react";
 
 export function Hero() {
     return (
-        <section className="relative pt-16 pb-20 overflow-hidden bg-gray-300">
+        <section className="relative pt-17 pb-20 overflow-hidden bg-gray-300">
             {/* Background Gradients */}
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-indigo-50 rounded-full blur-3xl opacity-50 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-green-50 rounded-full blur-3xl opacity-50 pointer-events-none" />
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[500px] h-[500px] bg-indigo-100/50 rounded-full blur-[100px] opacity-60 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-[500px] h-[500px] bg-blue-50/50 rounded-full blur-[100px] opacity-60 pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold mb-6">
-                            <Sparkles size={14} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2, duration: 0.5 }}
+                            className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-8"
+                        >
+                            <Sparkles size={16} className="text-indigo-600" />
                             <span>AI-POWERED RESUME BUILDER</span>
-                        </div>
-                        <h1 className="text-5xl md:text-6xl font-extrabold text-[#030213] leading-[1.1] mb-6 tracking-tight">
-                            Get hired at top companies with{" "}
-                            <span className="text-indigo-600">QuickCV</span>
+                        </motion.div>
+
+                        <h1 className="text-5xl md:text-6xl font-[900] text-gray-900 leading-[1.05] mb-8 tracking-tight">
+                            Build a resume that <br />
+                            <span className="text-indigo-600 bg-clip-text">gets interviews.</span>
                         </h1>
-                        <p className="text-lg text-[#717182] mb-8 leading-relaxed max-w-lg">
-                            Optimize your resume for ATS, highlight your best
-                            skills, and land 3x more interviews with our
-                            AI-driven resume architect.
+
+                        <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-xl font-medium">
+                            Join 10,000+ professionals using QuickCV to optimize their resumes for ATS and land 3x more interviews with AI-driven insights.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
-                            <button className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-indigo-700 hover:scale-105 transition-all cursor-pointer shadow-lg shadow-indigo-200">
-                                Build My Resume <ArrowRight size={20} />
-                            </button>
-                            <div className="flex -space-x-2">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div
-                                        key={i}
-                                        className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden"
-                                    >
-                                        <img
-                                            src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                                            alt="User"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                ))}
-                                <div className="pl-4 flex flex-col justify-center">
+
+                        <div className="flex flex-col sm:flex-row gap-5 items-center">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 hover:bg-indigo-700 transition-all cursor-pointer shadow-2xl shadow-indigo-200"
+                            >
+                                Build Your Resume <ArrowRight size={22} />
+                            </motion.button>
+
+                            <div className="flex flex-col gap-2">
+                                <div className="flex -space-x-3">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="w-12 h-12 rounded-full border-4 border-white bg-gray-100 overflow-hidden shadow-sm"
+                                        >
+                                            <img
+                                                src={`https://i.pravatar.cc/100?img=${i + 20}`}
+                                                alt="Professional"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex items-center gap-2">
                                     <div className="flex gap-0.5 text-yellow-400">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <Star
-                                                key={s}
-                                                size={12}
-                                                fill="currentColor"
-                                            />
+                                            <Star key={s} size={14} fill="currentColor" />
                                         ))}
                                     </div>
-                                    <span className="text-xs font-bold text-[#717182]">
-                                        Joined by 10k+ grads
+                                    <span className="text-sm font-bold text-gray-500">
+                                        4.9/5 by 10k+ users
                                     </span>
                                 </div>
                             </div>
@@ -67,66 +76,72 @@ export function Hero() {
                     </motion.div>
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
+                        initial={{ opacity: 0, x: 40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
                         className="relative"
                     >
-                        <div className="relative z-20 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-                            <div className="aspect-[3/4] overflow-hidden rounded-xl border border-gray-100 bg-gray-50 relative group">
+                        <div className="relative z-20 bg-white rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-gray-100 p-5 transform lg:rotate-3 hover:rotate-0 transition-transform duration-700 ease-out group">
+                            <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-gray-50 bg-gray-50 relative">
                                 <img
-                                    src="https://images.unsplash.com/photo-1693045181254-08462917f681?auto=format&fit=crop&q=80&w=1000"
-                                    alt="Resume Mockup"
-                                    className="w-full h-full object-cover"
+                                    src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000"
+                                    alt="Professional Resume Design"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
 
-                                {/* AI Overlay Analysis Mockup */}
-                                <div className="absolute top-1/4 right-4 w-48 bg-white/95 backdrop-blur shadow-xl rounded-xl p-3 border border-indigo-100 animate-bounce-slow">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                                        <span className="text-[10px] font-bold text-[#717182] uppercase tracking-wider">
-                                            AI Analysis
+                                {/* AI Floating Badge */}
+                                <motion.div
+                                    animate={{ y: [0, -10, 0] }}
+                                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                    className="absolute top-8 right-8 w-56 bg-white/90 backdrop-blur-xl shadow-2xl rounded-2xl p-4 border border-indigo-100"
+                                >
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                                            AI Optimizer
                                         </span>
                                     </div>
-                                    <p className="text-xs font-bold text-[#030213] mb-1">
-                                        Impactful Achievement
+                                    <p className="text-sm font-bold text-gray-900 mb-2">
+                                        Impact Score Improved!
                                     </p>
-                                    <p className="text-[10px] text-[#717182] leading-tight">
-                                        Quantified results by 40% with Python
-                                        automation.
-                                    </p>
-                                    <div className="mt-2 h-1 w-full bg-[#ececf0] rounded-full overflow-hidden">
+                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                                         <motion.div
                                             initial={{ width: 0 }}
-                                            animate={{ width: "85%" }}
-                                            transition={{ duration: 1.5, delay: 1 }}
-                                            className="h-full bg-green-500"
+                                            whileInView={{ width: "94%" }}
+                                            transition={{ duration: 2, delay: 1 }}
+                                            className="h-full bg-indigo-600"
                                         />
                                     </div>
-                                </div>
+                                </motion.div>
 
-                                <div className="absolute bottom-1/4 left-4 w-56 bg-indigo-600 shadow-xl rounded-xl p-3 text-white">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] font-bold opacity-80">
-                                            ATS Score
+                                {/* ATS Badge */}
+                                <motion.div
+                                    animate={{ y: [0, 10, 0] }}
+                                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                                    className="absolute bottom-12 left-8 bg-gray-900 shadow-2xl rounded-2xl p-5 text-white border border-white/10"
+                                >
+                                    <div className="flex items-center justify-between mb-3 gap-6">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                            ATS Compatibility
                                         </span>
-                                        <span className="text-xs font-bold">
-                                            92/100
+                                        <span className="text-lg font-[900] text-emerald-400">
+                                            98%
                                         </span>
                                     </div>
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1.5">
                                         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                                             <div
                                                 key={i}
-                                                className={`h-1 flex-1 rounded-full ${i <= 7 ? "bg-white" : "bg-white/20"}`}
+                                                className={`h-1.5 flex-1 rounded-full ${i <= 7 ? "bg-emerald-500" : "bg-white/20"}`}
                                             />
                                         ))}
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
                         </div>
-                        {/* Decorative element */}
-                        <div className="absolute -top-6 -left-6 w-24 h-24 bg-green-100 rounded-full -z-10 blur-xl animate-pulse" />
+                        {/* Abstract Background Shapes */}
+                        <div className="absolute -top-12 -left-12 w-48 h-48 bg-indigo-100 rounded-full -z-10 blur-3xl opacity-50" />
+                        <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-blue-100 rounded-full -z-10 blur-3xl opacity-50" />
                     </motion.div>
                 </div>
             </div>

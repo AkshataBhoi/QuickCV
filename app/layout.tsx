@@ -17,7 +17,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
     title: {
-        default: "ResuStack AI - Free AI Resume Builder for Software Engineers",
+        default: "QuickCV ",
         template: "%s | ResuStack AI"
     },
     description: "The free AI resume builder software engineers actually use to get interviews. ATS-optimized, developer-focused, and completely free.",

@@ -13,27 +13,27 @@ const templates = [
     {
         name: "Modern Professional",
         tag: "Most Popular",
-        image: "https://images.unsplash.com/photo-1586281380349-631533a3c947?auto=format&fit=crop&q=80&w=400",
+        image: "https://images.openai.com/static-rsc-3/pvgvHA39P8RxyJhtkb5Lp8rNgaAE8TkYvWusJHpAFIY0loA4NOy349fA9l43Vta1hScRa79NHBtunDMc5ig6HamZl21vol2H0FRK8bKwmpU?purpose=fullsize",
     },
     {
         name: "Creative Executive",
         tag: "Creative",
-        image: "https://images.unsplash.com/photo-1626197031507-c17099753214?auto=format&fit=crop&q=80&w=400",
+        image: "https://images.openai.com/static-rsc-3/pvgvHA39P8RxyJhtkb5Lp8rNgaAE8TkYvWusJHpAFIY0loA4NOy349fA9l43Vta1hScRa79NHBtunDMc5ig6HamZl21vol2H0FRK8bKwmpU?purpose=fullsize",
     },
     {
         name: "Classic Academic",
         tag: "Academic",
-        image: "https://images.unsplash.com/photo-1544650031-fbcd12104234?auto=format&fit=crop&q=80&w=400",
+        image: "https://cdn.prod.website-files.com/62f0854c1cef28185535ab61/65f985a44f52c1def4988acd_minimalist-1.png",
     },
     {
         name: "Tech Focused",
         tag: "Minimal",
-        image: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?auto=format&fit=crop&q=80&w=400",
+        image: "https://i.etsystatic.com/20769234/r/il/faf394/2004290491/il_fullxfull.2004290491_530n.jpg",
     },
     {
         name: "Minimalist Entry",
         tag: "Clean",
-        image: "https://images.unsplash.com/photo-1633526543814-9718c8922b7a?auto=format&fit=crop&q=80&w=400",
+        image: "https://images.openai.com/static-rsc-3/4o7tiR4ncszPrBsG1PhoioDLGbUTo8IvxukSA59pvlnuj7ibOz7yniS1g8ZHTESz6JXFIfXN7wtYFqogOg7TCg1L2ufnRzoxqRn5LjRKKh4?purpose=fullsize",
     },
     {
         name: "Sleek Manager",

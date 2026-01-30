@@ -7,6 +7,7 @@ import { FileSwitcher } from "@/components/dashboard/FileSwitcher";
 import { MetricCardSmall } from "@/components/dashboard/MetricCardSmall";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { ATSScorePie } from "@/components/dashboard/ATSScorePie";
+import { MyResumes } from "@/components/dashboard/MyResumes";
 
 export default function DashboardPage() {
     const { activeFile } = useDashboardFile();
@@ -44,7 +45,7 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
-                        <Link href="/builder">
+                        <Link href="/dashboard/resume-builder">
                             <Button size="sm" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] border-0">
                                 <Plus className="mr-2 h-4 w-4" /> New Resume
                             </Button>
@@ -192,6 +193,11 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* My Resumes Section */}
+                <div className="max-w-7xl mx-auto relative z-10">
+                    <MyResumes />
                 </div>
             </div>
         </div>

@@ -60,4 +60,27 @@ export const DEFAULT_RESUME_DATA: ResumeData = {
             tech: "MERN Stack, Redis",
         },
     ],
+    linkedin: "linkedin.com/in/johndoe",
+    github: "github.com/johndoe",
+    portfolio: "johndoe.dev",
+    certifications: [
+        {
+            id: 1,
+            name: "AWS Certified Solutions Architect",
+            issuer: "Amazon Web Services",
+            date: "2023",
+        },
+    ],
+    languages: [
+        {
+            id: 1,
+            language: "English",
+            level: "Native",
+        },
+        {
+            id: 2,
+            language: "Spanish",
+            level: "Intermediate",
+        },
+    ],
 };

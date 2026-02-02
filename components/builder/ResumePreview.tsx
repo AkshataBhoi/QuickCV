@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { TemplateId } from "@/lib/types"; // Ensure TemplateId is imported from types if moved, or locally if not.
+// import { TemplateId } from "@/lib/types"; // Ensure TemplateId is imported from types if moved, or locally if not.
 // Assuming TemplateId is string or union. In step 74 it was in TemplateSelector. 
 // Ideally it should be in types.ts. I will assume types.ts or simple string for now.
 // Actually TemplateId was imported from ./TemplateSelector in the original file. 

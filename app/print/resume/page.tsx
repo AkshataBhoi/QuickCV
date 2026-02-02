@@ -13,7 +13,30 @@ function PrintContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. Try LocalStorage
+    const fetchById = async (id: string) => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${id}`);
+        const result = await response.json();
+        if (response.ok && result.data) {
+          setData(result.data.content);
+          setType("resume");
+          setTemplate(result.data.templateId || "clean");
+        } else {
+          setError(result.message || "Failed to load document.");
+        }
+      } catch (e) {
+        setError("Network error. Please try again.");
+      }
+    };
+
+    // 1. Check for ID in URL (Best Practice)
+    const id = searchParams.get("id");
+    if (id) {
+      fetchById(id);
+      return;
+    }
+
+    // 2. Fallback to LocalStorage (Legacy)
     const storedPayload = localStorage.getItem("print_payload");
     if (storedPayload) {
       try {
@@ -27,7 +50,7 @@ function PrintContent() {
       }
     }
 
-    // 2. Fallback to URL Params
+    // 3. Fallback to URL Params (Legacy)
     const typeParam = searchParams.get("type");
     const templateParam = searchParams.get("template");
     const dataParam = searchParams.get("data");

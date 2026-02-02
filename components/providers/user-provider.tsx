@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { TemplateId } from "@/components/builder/TemplateSelector";
 
 export interface UserProfile {
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -22,6 +23,7 @@ interface UserContextType {
 }
 
 const DEFAULT_USER: UserProfile = {
+    id: "65b8f2d5c3167f0012345678", // Example MongoDB ID
     firstName: "Alex",
     lastName: "Rivera",
     email: "arivera@example.com",

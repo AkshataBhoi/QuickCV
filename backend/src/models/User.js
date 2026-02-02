@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
         default: 0,
       },
     },
+    aiUsage: {
+      summaryGenerations: { type: Number, default: 0 },
+      skillSuggestions: { type: Number, default: 0 },
+    },
 
     guestIds: [
       {
@@ -46,7 +50,7 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("User", userSchema);

@@ -20,11 +20,13 @@ import {
     Phone,
     ArrowRight,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
     TemplateSelector,
     TemplateId,
 } from "@/components/builder/TemplateSelector";
+import { ChangeTemplateDialog } from "@/components/builder/ChangeTemplateDialog";
 import { FormSection } from "@/components/builder/FormSection";
 import { cn } from "@/lib/utils";
 import { Toast, useToast } from "@/components/ui/toast";
@@ -32,6 +34,8 @@ import { useUser } from "@/components/providers/user-provider";
 import { SaveFileDialog } from "@/components/shared/SaveFileDialog";
 import { ResumeData } from "@/lib/types";
 import { DEFAULT_RESUME_DATA } from "@/lib/defaultResumeData";
+import { AISummaryModal } from "@/components/builder/AISummaryModal";
+import { AISkillsModal } from "@/components/builder/AISkillsModal";
 
 // Lazy load heavy preview component
 const ResumePreview = lazy(() =>
@@ -40,7 +44,15 @@ const ResumePreview = lazy(() =>
     }))
 );
 
-export default function ResumeBuilderPage() {
+export default function ResumeBuilderWrapper() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="animate-spin h-8 text-muted-foreground" /></div>}>
+            <ResumeBuilderPage />
+        </Suspense>
+    );
+}
+
+function ResumeBuilderPage() {
     const { user } = useUser();
     const [template, setTemplate] = useState<TemplateId>(
         user.preferredTemplate || "clean"
@@ -59,12 +71,59 @@ export default function ResumeBuilderPage() {
 
     const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
     const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+    const [changeTemplateOpen, setChangeTemplateOpen] = useState(false);
     const { showToast, toastMessage, toastType, displayToast, hideToast } =
         useToast();
+    const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+    const [skillsModalOpen, setSkillsModalOpen] = useState(false);
+
+    const searchParams = useSearchParams();
+    const resumeId = searchParams.get("id");
 
     useEffect(() => {
         setIsClient(true);
-    }, []);
+
+        const fetchResume = async () => {
+            if (!resumeId || resumeId === "resume-draft") return;
+
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${resumeId}`);
+                const result = await response.json();
+
+                if (response.ok && result.data) {
+                    const r = result.data;
+                    const resumeData = r.content || {}; // Using 'content' from backend
+                    setData({
+                        id: r._id,
+                        fullName: resumeData.fullName || "",
+                        email: resumeData.email || "",
+                        phone: resumeData.phone || "",
+                        location: resumeData.location || "",
+                        summary: resumeData.summary || "",
+                        experience: resumeData.experience || [],
+                        education: resumeData.education || [],
+                        skills: resumeData.skills || [],
+                        linkedin: resumeData.linkedin || "",
+                        github: resumeData.github || "",
+                        portfolio: resumeData.portfolio || "",
+                        projects: resumeData.projects || [],
+                        certifications: resumeData.certifications || [],
+                        languages: resumeData.languages || [],
+                    });
+                    setResumeTitle(r.title || "Untitled Resume");
+                    setTemplate(r.templateId || "clean");
+                    setSaveStatus("Saved");
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                displayToast("Failed to load resume", "error");
+            }
+        };
+
+        if (isClient) {
+            fetchResume();
+        }
+    }, [resumeId, isClient]);
 
     // Form Handlers
     const updateField = (field: keyof ResumeData, value: any) => {
@@ -107,28 +166,91 @@ export default function ResumeBuilderPage() {
         setSaveDialogOpen(true);
     };
 
-    const onSaveFile = (name: string) => {
+    const onSaveFile = async (name: string) => {
         setSaveStatus("Saving...");
-        // Mock save logic
-        setTimeout(() => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: data.id,
+                    title: name,
+                    templateId: template,
+                    content: { ...data }, // Nested as requested
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to save resume");
+            }
+
+            setData(prev => ({ ...prev, id: result.data._id }));
+            setResumeTitle(name);
             setSaveStatus("Saved");
             displayToast("Resume saved successfully!", "success");
-        }, 1000);
+        } catch (error: any) {
+            console.error("Save error:", error);
+            setSaveStatus("Unsaved");
+            displayToast(error.message || "Error saving resume", "error");
+        }
     };
 
-    const handleDuplicate = () => {
-        displayToast("Resume duplicated successfully!", "success");
-        // Mock logic: could open a new builder session with the same data
+    const handleDownload = async () => {
+        if (saveStatus !== "Saved") {
+            displayToast("Please save your resume before downloading", "info");
+            return;
+        }
+
+        displayToast("Preparing your PDF...", "info");
+
+        const element = document.getElementById("resume-preview");
+        if (!element) {
+            displayToast("Resume preview not found", "error");
+            return;
+        }
+
+        try {
+            // Use dynamic import for html2pdf to avoid SSR issues if any
+            const html2pdf = (await import("html2pdf.js")).default;
+
+            const opt = {
+                margin: 0,
+                filename: `${resumeTitle.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg' as const, quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+            };
+
+            await html2pdf().set(opt).from(element).save();
+            displayToast("PDF downloaded successfully!", "success");
+        } catch (error) {
+            console.error("Download error:", error);
+            displayToast("Failed to generate PDF", "error");
+        }
     };
+
+    // const handleDuplicate = () => {
+    //     displayToast("Resume duplicated successfully!", "success");
+    //     // Mock logic: could open a new builder session with the same data
+    // };
 
     const handleAIImprove = (field: keyof ResumeData) => {
-        displayToast("AI is improving your summary...", "info");
-        // Mock AI logic
-        setTimeout(() => {
-            if (field === "summary") {
-                updateField("summary", "Result-oriented Senior Software Engineer with a passion for building scalable web applications. Expert in modern JavaScript frameworks and cloud infrastructure, committed to delivering high-quality code and exceptional user experiences.");
-            }
-        }, 2000);
+        if (field === "summary") {
+            setSummaryModalOpen(true);
+        }
+    };
+
+    const onAddSkills = (newSkills: string[]) => {
+        setData(prev => {
+            const uniqueSkills = Array.from(new Set([...prev.skills, ...newSkills]));
+            return { ...prev, skills: uniqueSkills };
+        });
+        setSaveStatus("Unsaved");
+        displayToast(`Added ${newSkills.length} skills to your resume!`, "success");
     };
 
     if (!isClient) {
@@ -172,31 +294,31 @@ export default function ResumeBuilderPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button
+                    {/* <Button
                         size="sm"
                         className="md:flex hidden bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 border-0"
                         onClick={() => handleAIImprove("summary")}
                     >
                         <Sparkles className="h-4 w-4 mr-2" /> Generate with AI
-                    </Button>
+                    </Button> */}
 
                     <Button
                         variant="ghost"
                         size="sm"
                         className="hidden md:flex text-muted-foreground hover:text-white"
-                        onClick={() => displayToast("Template selection coming soon!", "info")}
+                        onClick={() => setChangeTemplateOpen(true)}
                     >
                         Change Template
                     </Button>
 
-                    <Button
+                    {/* <Button
                         variant="ghost"
                         size="sm"
                         className="hidden md:flex text-muted-foreground hover:text-white"
                         onClick={handleDuplicate}
                     >
                         Duplicate
-                    </Button>
+                    </Button> */}
 
                     <Button
                         variant="ghost"
@@ -206,13 +328,13 @@ export default function ResumeBuilderPage() {
                     >
                         <Save className="h-4 w-4 mr-2" /> Save
                     </Button>
-                    <Button
+                    {/* <Button
                         size="sm"
                         className="bg-white/10 text-white hover:bg-white/20"
-                        onClick={() => displayToast("Downloading PDF...", "info")}
+                        onClick={handleDownload}
                     >
                         Download
-                    </Button>
+                    </Button> */}
                     <SaveFileDialog
                         open={saveDialogOpen}
                         onOpenChange={setSaveDialogOpen}
@@ -304,10 +426,24 @@ export default function ResumeBuilderPage() {
                                 />
                                 <div className="flex flex-wrap gap-2">
                                     {data.skills.map((skill, i) => skill && (
-                                        <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-muted-foreground">
+                                        <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-muted-foreground flex items-center gap-1">
                                             {skill}
+                                            <button
+                                                onClick={() => updateField("skills", data.skills.filter((_, idx) => idx !== i))}
+                                                className="hover:text-red-400 transition-colors"
+                                            >
+                                                <Plus className="h-3 w-3 rotate-45" />
+                                            </button>
                                         </span>
                                     ))}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[10px] border border-emerald-500/20"
+                                        onClick={() => setSkillsModalOpen(true)}
+                                    >
+                                        <Sparkles className="h-3 w-3 mr-1" /> Suggest Skills
+                                    </Button>
                                 </div>
                             </div>
                         </FormSection>
@@ -591,6 +727,32 @@ export default function ResumeBuilderPage() {
           }
         }
       `}</style>
+            <AISummaryModal
+                isOpen={summaryModalOpen}
+                onClose={() => setSummaryModalOpen(false)}
+                onGenerate={(summary) => {
+                    updateField("summary", summary);
+                    displayToast("Summary optimized with AI!", "success");
+                }}
+            />
+
+            <AISkillsModal
+                isOpen={skillsModalOpen}
+                onClose={() => setSkillsModalOpen(false)}
+                onAddSkills={onAddSkills}
+                existingSkills={data.skills}
+            />
+
+            <ChangeTemplateDialog
+                open={changeTemplateOpen}
+                onOpenChange={setChangeTemplateOpen}
+                currentTemplate={template}
+                onSelect={(newTemplate) => {
+                    setTemplate(newTemplate);
+                    setSaveStatus("Unsaved");
+                    displayToast("Template updated!", "success");
+                }}
+            />
         </div>
     );
 }

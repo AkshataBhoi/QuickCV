@@ -4,30 +4,31 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useModal } from "@/components/providers/modal-provider";
-import { ResumeTemplate1 } from "@/components/templates/template-1";
-import { ResumeTemplate2 } from "@/components/templates/template-2";
-import { ResumeTemplate3 } from "@/components/templates/template-3";
+import { DEFAULT_RESUME_DATA } from "@/lib/defaultResumeData";
+import { ModernProfessional } from "@/components/templates/modern-01";
+import { ClassicCorporate } from "@/components/templates/classic-02";
+import { SimpleMinimal } from "@/components/templates/minimal-03";
 
 const templates = [
     {
         id: 1,
         name: "Professional",
         description: "Clean & Standard",
-        component: ResumeTemplate1,
+        component: ClassicCorporate,
         features: ["ATS-Optimized", "Classic Layout", "All Industries"]
     },
     {
         id: 2,
         name: "FAANG",
         description: "Tech-Focused",
-        component: ResumeTemplate2,
+        component: ModernProfessional,
         features: ["Modern Design", "Two-Column", "Tech Roles"]
     },
     {
         id: 3,
         name: "Executive",
         description: "Leadership-Ready",
-        component: ResumeTemplate3,
+        component: SimpleMinimal,
         features: ["Bold Header", "Premium Feel", "Senior Positions"]
     },
 ];
@@ -156,7 +157,7 @@ export function ResumeTemplates() {
                                         {/* Scaled Template Preview */}
                                         <div className="w-full h-full relative overflow-hidden pointer-events-none">
                                             <div className="absolute top-0 left-0 w-[595px] h-[842px] origin-top-left transform scale-[0.64] md:scale-[0.64] bg-white">
-                                                <TemplateComponent />
+                                                <TemplateComponent data={DEFAULT_RESUME_DATA} />
                                             </div>
                                         </div>
                                     </div>

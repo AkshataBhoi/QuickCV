@@ -50,7 +50,7 @@ export default function MyFilesPage() {
             if (file.data) {
                 localStorage.setItem("resume_data", JSON.stringify(file.data));
             }
-            router.push("/builder");
+            router.push(`/dashboard/resume-builder?id=${file.id}`);
         } else if (file.type === "Cover Letter") {
             router.push("/dashboard/cover-letter");
         } else if (file.type === "ATS Report") {
@@ -67,9 +67,8 @@ export default function MyFilesPage() {
     };
 
     const handleDownload = (file: any) => {
-        // Trigger generic print/download logic
-        // For now, just open preview which has download button
-        handleView(file);
+        // Open the dedicated print/download page
+        window.open(`/print/resume?id=${file.id}`, '_blank');
     };
 
     return (

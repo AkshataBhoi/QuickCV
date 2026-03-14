@@ -13,6 +13,7 @@ interface SaveFileDialogProps {
     defaultName?: string;
     title?: string;
     description?: string;
+    isLoading?: boolean;
 }
 
 export function SaveFileDialog({
@@ -21,14 +22,14 @@ export function SaveFileDialog({
     onSave,
     defaultName = "",
     title = "Save File",
-    description = "Enter a name for your file."
+    description = "Enter a name for your file.",
+    isLoading = false
 }: SaveFileDialogProps) {
     const [name, setName] = useState(defaultName);
 
     const handleSave = () => {
         if (name.trim()) {
             onSave(name);
-            onOpenChange(false);
         }
     };
 
@@ -52,14 +53,22 @@ export function SaveFileDialog({
                             onChange={(e) => setName(e.target.value)}
                             className="col-span-3 bg-white/5 border-white/10 text-white"
                             autoFocus
+                            disabled={isLoading}
                         />
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)} className="border-white/10 text-white hover:bg-white/5 hover:text-white">
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        className="border-white/10 text-white hover:bg-white/5 hover:text-white"
+                        disabled={isLoading}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
+                        {isLoading ? "Saving..." : "Save"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

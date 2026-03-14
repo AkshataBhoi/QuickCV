@@ -15,7 +15,7 @@ function PrintContent() {
   useEffect(() => {
     const fetchById = async (id: string) => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${id}/print`);
         const result = await response.json();
         if (response.ok && result.data) {
           setData(result.data.content);

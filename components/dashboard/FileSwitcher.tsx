@@ -35,7 +35,7 @@ export function FileSwitcher() {
                             variant="ghost"
                             className="h-auto p-0 hover:bg-transparent font-semibold text-lg flex items-center gap-2 text-foreground"
                         >
-                            {activeFile.name}
+                            {activeFile?.name || "Select File"}
                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         </Button>
                     </DropdownMenuTrigger>

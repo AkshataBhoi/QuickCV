@@ -32,12 +32,30 @@ const ResumePreview = lazy(() =>
   }))
 );
 
-export default function BuilderPage() {
-  const { user } = useUser();
-  // Ensure template is never undefined
-  const [template, setTemplate] = useState<TemplateId>(
-    user.preferredTemplate || "clean"
+import { useSearchParams } from "next/navigation";
+import { getTemplateById } from "@/lib/templates.config";
+
+export default function BuilderWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="animate-spin h-8 text-muted-foreground" /></div>}>
+      <BuilderPage />
+    </Suspense>
   );
+}
+
+function BuilderPage() {
+  const { user } = useUser();
+  const searchParams = useSearchParams();
+  const templateParam = searchParams.get("template");
+
+  // Ensure template is never undefined
+  const [template, setTemplate] = useState<TemplateId>(() => {
+    if (templateParam) {
+      const t = getTemplateById(templateParam);
+      if (t) return t.id;
+    }
+    return user.preferredTemplate || "modern-01";
+  });
   const [isClient, setIsClient] = useState(false);
 
   // Merge user data with initial template safely
@@ -56,7 +74,12 @@ export default function BuilderPage() {
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+
+    if (templateParam) {
+      const t = getTemplateById(templateParam);
+      if (t) setTemplate(t.id);
+    }
+  }, [templateParam]);
 
   // Load from LocalStorage on mount, or sync with User Context if no local draft
   useEffect(() => {

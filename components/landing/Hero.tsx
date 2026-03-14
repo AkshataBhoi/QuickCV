@@ -3,8 +3,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { useModal } from "@/components/providers/modal-provider";
 
 export function Hero() {
+    const { openModal } = useModal();
     return (
         <section className="relative pt-17 pb-20 overflow-hidden bg-gray-300">
             {/* Background Gradients */}
@@ -41,6 +43,7 @@ export function Hero() {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
+                                onClick={openModal}
                                 className="w-full sm:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 hover:bg-indigo-700 transition-all cursor-pointer shadow-2xl shadow-indigo-200"
                             >
                                 Build Your Resume <ArrowRight size={22} />

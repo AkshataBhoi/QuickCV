@@ -5,33 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useModal } from "@/components/providers/modal-provider";
 import { DEFAULT_RESUME_DATA } from "@/lib/defaultResumeData";
-import { ModernProfessional } from "@/components/templates/modern-01";
-import { ClassicCorporate } from "@/components/templates/classic-02";
-import { SimpleMinimal } from "@/components/templates/minimal-03";
-
-const templates = [
-    {
-        id: 1,
-        name: "Professional",
-        description: "Clean & Standard",
-        component: ClassicCorporate,
-        features: ["ATS-Optimized", "Classic Layout", "All Industries"]
-    },
-    {
-        id: 2,
-        name: "FAANG",
-        description: "Tech-Focused",
-        component: ModernProfessional,
-        features: ["Modern Design", "Two-Column", "Tech Roles"]
-    },
-    {
-        id: 3,
-        name: "Executive",
-        description: "Leadership-Ready",
-        component: SimpleMinimal,
-        features: ["Bold Header", "Premium Feel", "Senior Positions"]
-    },
-];
+import { TEMPLATES } from "@/lib/templates.config";
 
 export function ResumeTemplates() {
     const { openModal } = useModal();
@@ -40,22 +14,22 @@ export function ResumeTemplates() {
     // Auto-rotate templates
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % templates.length);
+            setCurrentIndex((prev) => (prev + 1) % TEMPLATES.length);
         }, 5000);
         return () => clearInterval(interval);
     }, []);
 
     const nextTemplate = () => {
-        setCurrentIndex((prev) => (prev + 1) % templates.length);
+        setCurrentIndex((prev) => (prev + 1) % TEMPLATES.length);
     };
 
     const prevTemplate = () => {
-        setCurrentIndex((prev) => (prev - 1 + templates.length) % templates.length);
+        setCurrentIndex((prev) => (prev - 1 + TEMPLATES.length) % TEMPLATES.length);
     };
 
     return (
         <section
-            id="templates"
+            id="templates-carousel"
             className="relative w-full py-24 md:py-32 bg-gradient-to-b from-background via-background to-slate-950/50 overflow-hidden"
             itemScope
             itemType="https://schema.org/ItemList"
@@ -85,7 +59,7 @@ export function ResumeTemplates() {
                 <div className="relative max-w-6xl mx-auto">
                     {/* Template Cards Container */}
                     <div className="relative h-[500px] md:h-[600px] flex items-center justify-center perspective-[2000px]">
-                        {templates.map((template, index) => {
+                        {TEMPLATES.map((template, index) => {
                             const offset = index - currentIndex;
                             const absOffset = Math.abs(offset);
 
@@ -98,34 +72,30 @@ export function ResumeTemplates() {
                             let zIndex = 10;
 
                             if (offset === 0) {
-                                // Center card (active)
                                 rotation = 0;
                                 translateX = 0;
                                 translateZ = 0;
                                 scale = 1;
                                 opacity = 1;
                                 zIndex = 30;
-                            } else if (offset === -1 || (offset === 2 && templates.length === 3)) {
-                                // Left card
-                                rotation = -15;
-                                translateX = -280;
+                            } else if (offset === 1 || (offset === -(TEMPLATES.length - 1))) {
+                                rotation = 10;
+                                translateX = 120;
                                 translateZ = -100;
-                                scale = 0.85;
-                                opacity = 0.7;
+                                scale = 0.9;
+                                opacity = 0.6;
                                 zIndex = 20;
-                            } else if (offset === 1 || (offset === -2 && templates.length === 3)) {
-                                // Right card
-                                rotation = 15;
-                                translateX = 280;
+                            } else if (offset === -1 || (offset === (TEMPLATES.length - 1))) {
+                                rotation = -10;
+                                translateX = -120;
                                 translateZ = -100;
-                                scale = 0.85;
-                                opacity = 0.7;
+                                scale = 0.9;
+                                opacity = 0.6;
                                 zIndex = 20;
                             } else {
-                                // Hidden cards
                                 opacity = 0;
-                                scale = 0.7;
                                 zIndex = 0;
+                                scale = 0.8;
                             }
 
                             const TemplateComponent = template.component;
@@ -133,38 +103,34 @@ export function ResumeTemplates() {
                             return (
                                 <div
                                     key={template.id}
-                                    className="absolute transition-all duration-700 ease-out"
+                                    className="absolute transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
                                     style={{
                                         transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotation}deg) scale(${scale})`,
                                         opacity,
                                         zIndex,
-                                        transformStyle: 'preserve-3d',
                                     }}
-                                    itemProp="itemListElement"
-                                    itemScope
-                                    itemType="https://schema.org/Product"
                                 >
-                                    {/* Template Card */}
-                                    <div
-                                        className={`w-[300px] md:w-[380px] aspect-[210/297] bg-white rounded-xl shadow-2xl overflow-hidden border-2 transition-all duration-300 ${offset === 0
-                                            ? 'border-cyan-500 shadow-[0_0_40px_rgba(6,182,212,0.3)]'
-                                            : 'border-slate-200 hover:border-cyan-400'
-                                            }`}
-                                        onClick={() => offset !== 0 && setCurrentIndex(index)}
-                                        role="button"
-                                        tabIndex={0}
-                                    >
-                                        {/* Scaled Template Preview */}
-                                        <div className="w-full h-full relative overflow-hidden pointer-events-none">
-                                            <div className="absolute top-0 left-0 w-[595px] h-[842px] origin-top-left transform scale-[0.64] md:scale-[0.64] bg-white">
+                                    <div className="bg-white rounded-xl shadow-2xl overflow-hidden w-[300px] md:w-[400px] aspect-[1/1.4] border border-border/50 group">
+                                        {/* Template Preview */}
+                                        <div className="w-full h-full p-4 overflow-hidden pointer-events-none origin-top transition-transform duration-500 group-hover:scale-[1.02]">
+                                            <div className="scale-[0.45] origin-top w-[210mm] bg-white">
                                                 <TemplateComponent data={DEFAULT_RESUME_DATA} />
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* SEO Meta */}
-                                    <meta itemProp="name" content={`${template.name} Resume Template`} />
-                                    <meta itemProp="description" content={template.description} />
+                                        {/* Overlay */}
+                                        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                            <Button
+                                                onClick={() => {
+                                                    window.location.href = `/dashboard/resume-builder?template=${template.id}`;
+                                                }}
+                                                size="lg"
+                                                className="font-bold shadow-xl"
+                                            >
+                                                Use This Template
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             );
                         })}

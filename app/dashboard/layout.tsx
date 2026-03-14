@@ -161,14 +161,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { AuthGuard } from "@/components/auth/AuthGuard";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <DashboardFileProvider>
-      <DashboardContent>{children}</DashboardContent>
-    </DashboardFileProvider>
+    <AuthGuard>
+      <DashboardFileProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </DashboardFileProvider>
+    </AuthGuard>
   );
 }

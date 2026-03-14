@@ -2,72 +2,48 @@
 
 import { TableRowActions } from "@/components/dashboard/TableRowActions";
 import { Button } from "@/components/ui/button";
-import { FileText, Search, Layout, Filter } from "lucide-react";
-import { useState, useEffect } from "react";
+import { FileText, Search, Layout } from "lucide-react";
+import { useState } from "react";
 import { FilePreviewDialog } from "@/components/shared/FilePreviewDialog";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/toast";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
+import Link from "next/link";
 
 export default function MyFilesPage() {
-    const { files: globalFiles, setActiveFile } = useDashboardFile();
-
-    // Map global files to include UI-specific fields like 'status' and 'date'
-    // This preserves the exact UI while using the single source of truth
-    const MAPPED_FILES = globalFiles.map(f => ({
-        ...f,
-        date: f.updatedAt, // Map updatedAt to date
-        status: "Ready",   // Mock status for UI consistency
-        template: f.template || "-"
-    }));
-
-    const [files, setFiles] = useState<any[]>(MAPPED_FILES);
+    const { files: globalFiles, setActiveFile, deleteFile, isLoading } = useDashboardFile();
     const [previewOpen, setPreviewOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState<any | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const router = useRouter();
 
-    const filteredFiles = files.filter(file =>
+    const filteredFiles = globalFiles.filter(file =>
         file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         file.type.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Sync state if global files change (though unlikely in this mocked version)
-    useEffect(() => {
-        setFiles(MAPPED_FILES);
-    }, [globalFiles]);
-
     const handleView = (file: any) => {
         setSelectedFile(file);
-        setActiveFile(file.id); // Sync with Dashboard context
+        setActiveFile(file.id);
         setPreviewOpen(true);
     };
 
     const handleEdit = (file: any) => {
         if (file.type === "Resume") {
-            // Load this resume data into local storage for the builder to pick up
-            // WARNING: This overwrites current draft. In a real app we'd use IDs.
-            if (file.data) {
-                localStorage.setItem("resume_data", JSON.stringify(file.data));
-            }
             router.push(`/dashboard/resume-builder?id=${file.id}`);
         } else if (file.type === "Cover Letter") {
             router.push("/dashboard/cover-letter");
         } else if (file.type === "ATS Report") {
-            // ATS is not really editable in the same way, maybe just view?
             handleView(file);
         }
     };
 
-    const handleDelete = (id: any) => {
-        const newFiles = files.filter(f => f.id !== id);
-        setFiles(newFiles);
-        // Persist deletion (simplified for mock)
-        localStorage.setItem("my_files", JSON.stringify(newFiles));
+    const handleDelete = async (id: string) => {
+        if (confirm("Are you sure you want to delete this file?")) {
+            await deleteFile(id);
+        }
     };
 
     const handleDownload = (file: any) => {
-        // Open the dedicated print/download page
         window.open(`/print/resume?id=${file.id}`, '_blank');
     };
 
@@ -89,6 +65,9 @@ export default function MyFilesPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    <Link href="/dashboard/resume-builder">
+                        <Button size="sm">Create New</Button>
+                    </Link>
                 </div>
             </div>
 
@@ -106,42 +85,60 @@ export default function MyFilesPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {filteredFiles.map((file) => (
-                                <tr key={file.id} className="group hover:bg-white/5 transition-colors">
-                                    <td className="p-4 pl-6 font-medium flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                                            <FileText className="h-4 w-4" />
-                                        </div>
-                                        {file.name}
-                                    </td>
-                                    <td className="p-4 text-muted-foreground">{file.type}</td>
-                                    <td className="p-4 text-muted-foreground flex items-center gap-2">
-                                        {file.template !== "-" && <Layout className="h-3 w-3 opacity-50" />}
-                                        {file.template}
-                                    </td>
-                                    <td className="p-4 text-muted-foreground">{file.date}</td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${file.status === "Ready" || file.status === "Complete" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                            }`}>
-                                            {file.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <TableRowActions
-                                            onView={() => handleView(file)}
-                                            onEdit={() => handleEdit(file)}
-                                            onDownload={() => handleDownload(file)}
-                                            onDelete={() => handleDelete(file.id)}
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredFiles.length === 0 && (
+                            {isLoading && filteredFiles.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                                        No files found. Create your first resume!
+                                    <td colSpan={6} className="p-12 text-center">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                                            <p className="text-muted-foreground">Loading files...</p>
+                                        </div>
                                     </td>
                                 </tr>
+                            ) : (
+                                <>
+                                    {filteredFiles.map((file) => (
+                                        <tr key={file.id} className="group hover:bg-white/5 transition-colors">
+                                            <td className="p-4 pl-6 font-medium flex items-center gap-3">
+                                                <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                                                    <FileText className="h-4 w-4" />
+                                                </div>
+                                                {file.name}
+                                            </td>
+                                            <td className="p-4 text-muted-foreground">{file.type}</td>
+                                            <td className="p-4 text-muted-foreground flex items-center gap-2">
+                                                {file.template && file.template !== "-" && <Layout className="h-3 w-3 opacity-50" />}
+                                                {file.template || "-"}
+                                            </td>
+                                            <td className="p-4 text-muted-foreground">{file.updatedAt}</td>
+                                            <td className="p-4">
+                                                <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${file.status === "COMPLETED" || file.data?.isDraft === false
+                                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                                    }`}>
+                                                    {file.status || (file.data?.isDraft ? "Draft" : "Ready")}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <TableRowActions
+                                                    onView={() => handleView(file)}
+                                                    onEdit={() => handleEdit(file)}
+                                                    onDownload={() => handleDownload(file)}
+                                                    onDelete={() => handleDelete(file.id)}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredFiles.length === 0 && !isLoading && (
+                                        <tr>
+                                            <td colSpan={6} className="p-12 text-center text-muted-foreground">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <FileText className="h-10 w-10 opacity-20" />
+                                                    <p>No files found. Create your first resume to get started!</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </>
                             )}
                         </tbody>
                     </table>

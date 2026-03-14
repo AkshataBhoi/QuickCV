@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Save } from "lucide-react";
+import { Sparkles, Save, Layout, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   TemplateSelector,
@@ -14,30 +14,35 @@ import {
   CoverLetterPreview,
   CoverLetterData,
 } from "@/components/builder/CoverLetterPreview";
+import { ChangeTemplateDialog } from "@/components/builder/ChangeTemplateDialog";
 import { PremiumUnlockDialog } from "@/components/shared/PremiumUnlockDialog";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { Toast, useToast } from "@/components/ui/toast";
+import { useAuth } from "@/context/AuthContext";
 import { useUser } from "@/components/providers/user-provider";
+import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { SaveFileDialog } from "@/components/shared/SaveFileDialog";
 
 export default function CoverLetterPage() {
-  const { user } = useUser();
+  const { user: authUser } = useAuth();
+  const { user: profileUser } = useUser();
   const [isPremium, setIsPremium] = useState(false);
   const [showUnlock, setShowUnlock] = useState(true); // Show dialog on load
   const [template, setTemplate] = useState<TemplateId>(
-    user.preferredTemplate || "clean"
+    profileUser.preferredTemplate || "modern-01"
   );
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [changeTemplateOpen, setChangeTemplateOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { showToast, toastMessage, toastType, displayToast, hideToast } =
     useToast();
 
   // Mock Data - Initialize with user data
   const [data, setData] = useState<CoverLetterData>({
-    fullName: `${user.firstName} ${user.lastName}`,
-    email: user.email,
-    phone: user.phone,
-    city: user.location,
+    fullName: `${profileUser.firstName} ${profileUser.lastName}`,
+    email: profileUser.email,
+    phone: profileUser.phone,
+    city: profileUser.location,
     role: "Senior Product Engineer",
     company: "TechFlow Systems",
     hiringManager: "Sarah Connor",
@@ -48,17 +53,12 @@ export default function CoverLetterPage() {
   useEffect(() => {
     setData((prev) => ({
       ...prev,
-      fullName: `${user.firstName} ${user.lastName}`,
-      email: user.email,
-      phone: user.phone,
-      city: user.location,
+      fullName: `${profileUser.firstName} ${profileUser.lastName}`,
+      email: profileUser.email,
+      phone: profileUser.phone,
+      city: profileUser.location,
     }));
-    // Only update template if it hasn't been manually changed?
-    // For now, let's respect the user's manual choice if they change it, but sync on mount.
-    // Actually, syncing blindly might overwrite manual changes if user updates settings while on this page.
-    // Let's just use the initial state sync which is already done above for 'data' in useState,
-    // BUT useState initializer only runs once. So we DO need useEffect to sync updates from settings panel.
-  }, [user]);
+  }, [profileUser]);
 
   const [generating, setGenerating] = useState(false);
 
@@ -67,15 +67,11 @@ export default function CoverLetterPage() {
     setTimeout(() => {
       setData((prev) => ({
         ...prev,
-        body: `Dear ${
-          prev.hiringManager || "Hiring Manager"
-        },\n\nI am writing to express my strong interest in the ${
-          prev.role
-        } position at ${prev.company}. Having followed ${
-          prev.company
-        }'s work for years, I was excited to see an opening that perfectly aligns with my background in scalable cloud architecture and user-centric design.\n\nIn my previous role at Innovate Create, I led the redesign of our core mobile app, resulting in a 20% increase in user retention. I am confident I can bring this same level of strategic thinking and execution to your team.\n\nThank you for considering my application. I look forward to the possibility of discussing how my skills could contribute to ${
-          prev.company
-        }'s continued success.\n\nSincerely,\n${prev.fullName}`,
+        body: `Dear ${prev.hiringManager || "Hiring Manager"
+          },\n\nI am writing to express my strong interest in the ${prev.role
+          } position at ${prev.company}. Having followed ${prev.company
+          }'s work for years, I was excited to see an opening that perfectly aligns with my background in scalable cloud architecture and user-centric design.\n\nIn my previous role at Innovate Create, I led the redesign of our core mobile app, resulting in a 20% increase in user retention. I am confident I can bring this same level of strategic thinking and execution to your team.\n\nThank you for considering my application. I look forward to the possibility of discussing how my skills could contribute to ${prev.company
+          }'s continued success.\n\nSincerely,\n${prev.fullName}`,
       }));
       setGenerating(false);
     }, 1500);
@@ -91,55 +87,70 @@ export default function CoverLetterPage() {
     setSaveDialogOpen(true);
   };
 
-  const onSaveFile = (name: string) => {
-    // Save to local files (mock)
-    const myFiles = JSON.parse(localStorage.getItem("my_files") || "[]");
-    const existingIndex = myFiles.findIndex((f: any) => f.id === "cl-draft");
+  const { addFile } = useDashboardFile();
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-    const newFile = {
-      id: "cl-draft",
-      name: name,
-      type: "Cover Letter",
-      template: template,
-      date: new Date().toLocaleDateString(),
-      data: data,
-    };
+  const onSaveFile = async (name: string) => {
+    setIsSaving(true);
+    try {
+      const token = await authUser?.getIdToken();
+      const response = await fetch(`${API_URL}/api/resume`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "x-user-id": authUser?.uid || ""
+        },
+        body: JSON.stringify({
+          title: name,
+          content: data,
+          templateId: template,
+          type: "cover-letter"
+        }),
+      });
 
-    if (existingIndex >= 0) {
-      myFiles[existingIndex] = newFile;
-    } else {
-      myFiles.push(newFile);
+      const result = await response.json();
+
+      if (response.ok && result.data) {
+        addFile(result.data);
+        setSaveDialogOpen(false);
+        displayToast("File saved successfully ✓", "success");
+      } else {
+        throw new Error(result.message || "Failed to save");
+      }
+    } catch (error: any) {
+      console.error("Save Error:", error);
+      displayToast(error.message || "Failed to save cover letter", "error");
+    } finally {
+      setIsSaving(false);
     }
-    localStorage.setItem("my_files", JSON.stringify(myFiles));
-
-    displayToast("Cover letter saved to My Files!", "success");
   };
 
-//   const handlePrint = () => {
-//   const element = document.getElementById("resume-export");
-//   if (!element) {
-//     console.error("Export element not found");
-//     return;
-//   }
+  //   const handlePrint = () => {
+  //   const element = document.getElementById("resume-export");
+  //   if (!element) {
+  //     console.error("Export element not found");
+  //     return;
+  //   }
 
-//   html2pdf()
-//     .set({
-//       margin: 0,
-//       filename: `Cover-Letter-${data.company || "Draft"}.pdf`,
-//       image: { type: "jpeg", quality: 0.98 },
-//       html2canvas: {
-//         scale: 2,
-//         useCORS: true,
-//       },
-//       jsPDF: {
-//         unit: "mm",
-//         format: "a4",
-//         orientation: "portrait",
-//       },
-//     })
-//     .from(element)
-//     .save();
-// };
+  //   html2pdf()
+  //     .set({
+  //       margin: 0,
+  //       filename: `Cover-Letter-${data.company || "Draft"}.pdf`,
+  //       image: { type: "jpeg", quality: 0.98 },
+  //       html2canvas: {
+  //         scale: 2,
+  //         useCORS: true,
+  //       },
+  //       jsPDF: {
+  //         unit: "mm",
+  //         format: "a4",
+  //         orientation: "portrait",
+  //       },
+  //     })
+  //     .from(element)
+  //     .save();
+  // };
 
 
   return (
@@ -175,12 +186,27 @@ export default function CoverLetterPage() {
         {isPremium && (
           <div className="flex items-center gap-2">
             <Button
-              onClick={handleSaveClick}
+              onClick={() => setChangeTemplateOpen(true)}
               size="sm"
               variant="ghost"
               className="text-muted-foreground hover:text-white"
             >
-              <Save className="h-4 w-4 mr-2" /> Save
+              <Layout className="h-4 w-4 mr-2" /> Change Template
+            </Button>
+            <ChangeTemplateDialog
+              currentTemplate={template}
+              onSelect={(id) => setTemplate(id)}
+              open={changeTemplateOpen}
+              onOpenChange={setChangeTemplateOpen}
+            />
+            <Button
+              onClick={handleSaveClick}
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-white"
+              disabled={isSaving}
+            >
+              <Save className="h-4 w-4 mr-2" /> {isSaving ? "Saving..." : "Save"}
             </Button>
             <SaveFileDialog
               open={saveDialogOpen}
@@ -188,8 +214,9 @@ export default function CoverLetterPage() {
               onSave={onSaveFile}
               defaultName={`Cover Letter - ${data.company || "Draft"}`}
               title="Save Cover Letter"
+              isLoading={isSaving}
             />
-           
+
             {/* <Button
               onClick={handlePrint}
               size="sm"
@@ -203,7 +230,7 @@ export default function CoverLetterPage() {
 
       <PremiumUnlockDialog
         open={showUnlock && !isPremium}
-        onClose={() => {}}
+        onClose={() => { }}
         onUnlock={handleUnlock}
       />
 
@@ -216,16 +243,16 @@ export default function CoverLetterPage() {
         {/* LEFT: EDITOR */}
         <div className="w-full lg:w-1/2 overflow-y-auto p-6 pb-32 scrollbar-thin scrollbar-thumb-white/10">
           <div className="max-w-xl mx-auto space-y-8">
-            <section>
+            {/* <section>
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">
                 1. Visual Style
               </h2>
               <TemplateSelector selectedId={template} onSelect={setTemplate} />
-            </section>
+            </section> */}
 
             <section className="space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                2. The Details
+                1. The Details
               </h2>
 
               <div className="grid grid-cols-2 gap-4">
@@ -279,7 +306,7 @@ export default function CoverLetterPage() {
 
             <section>
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                3. Refine
+                2. Refine
               </h2>
               <Textarea
                 value={data.body}
@@ -295,28 +322,28 @@ export default function CoverLetterPage() {
           id="cl-preview-container"
           className="w-full lg:w-1/2 bg-[#525659] p-8 overflow-y-auto hidden lg:flex justify-center"
         >
-         
-         <div className="origin-top scale-[0.65] xl:scale-[0.85] mb-20">
-  {/* EXPORT TARGET */}
-  <div
-    id="resume-export"
-    className="w-[210mm] min-h-[297mm] bg-white shadow-2xl relative"
-  >
-    {/* WATERMARK FOR FREE USERS */}
-    {!isPremium && (
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span className="text-[64px] font-bold text-black/10 rotate-[-30deg]">
-          ResuStack.ai
-        </span>
-      </div>
-    )}
 
-    <CoverLetterPreview data={data} template={template} />
-  </div>
-</div>
+          <div className="origin-top scale-[0.65] xl:scale-[0.85] mb-20">
+            {/* EXPORT TARGET */}
+            <div
+              id="resume-export"
+              className="w-[210mm] min-h-[297mm] bg-white shadow-2xl relative"
+            >
+              {/* WATERMARK FOR FREE USERS */}
+              {!isPremium && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="text-[64px] font-bold text-black/10 rotate-[-30deg]">
+                    ResuStack.ai
+                  </span>
+                </div>
+              )}
+
+              <CoverLetterPreview data={data} template={template} />
+            </div>
+          </div>
 
         </div>
-      </div>     
+      </div>
     </div>
   );
 }

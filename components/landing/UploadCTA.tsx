@@ -1,10 +1,53 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Upload, ArrowRight, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useModal } from "@/components/providers/modal-provider";
+
 
 export function UploadCTA() {
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
+    const { openModal } = useModal();
+    
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("resume", file);
+
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const response = await fetch(`${API_URL}/api/ats/upload`, {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                // Redirect to ATS analysis page with the new resume ID and step 2
+                router.push(`/dashboard/ats?resumeId=${data.data.resumeId}&step=2`);
+            } else {
+                alert(data.message || "Upload failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("An error occurred during upload. Please try again.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     return (
         <section className="py-24 bg-white dark:bg-black/90 relative overflow-hidden">
             {/* Background Accents */}
@@ -46,16 +89,19 @@ export function UploadCTA() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full">
+                            
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={openModal}
+                                disabled={uploading}
                                 className="w-full sm:w-auto relative group overflow-hidden"
                             >
                                 <div className="absolute inset-0 rounded-xl bg-indigo-600 opacity-80 group-hover:opacity-100 transition-opacity" />
                                 <div className="relative flex items-center justify-center gap-3 px-10 py-5  text-white font-bold text-xl rounded-2xl border border-white/20 backdrop-blur-sm shadow-[0_0_20px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all">
-                                    <Upload size={22} className=" transition-transform" />
-                                    <span>Upload Resume</span>
-                                    {/* <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" /> */}
+                                    {/* <Upload size={22} className=" transition-transform" /> */}                       
+                                    <span>Upload Resume</span>                                    
+                                    <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
                                 </div>
                             </motion.button>
 
@@ -77,3 +123,4 @@ export function UploadCTA() {
         </section>
     );
 }
+

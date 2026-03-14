@@ -4,9 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModalProvider } from "@/components/providers/modal-provider";
-
-
 import { UserProvider } from "@/components/providers/user-provider";
+import { AuthProvider } from "@/context/AuthContext";
 
 const poppins = Poppins({
     subsets: ["latin"],
@@ -74,11 +73,13 @@ export default function RootLayout({
                     forcedTheme="dark"
                     disableTransitionOnChange
                 >
-                    <UserProvider>
-                        <ModalProvider>
-                            {children}
-                        </ModalProvider>
-                    </UserProvider>
+                    <AuthProvider>
+                        <UserProvider>
+                            <ModalProvider>
+                                {children}
+                            </ModalProvider>
+                        </UserProvider>
+                    </AuthProvider>
                 </ThemeProvider>
             </body>
         </html>

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { TemplateId } from "./TemplateSelector";
+import { TemplateId } from "@/lib/templates.config";
 
 export interface CoverLetterData {
     fullName: string;
@@ -22,17 +22,26 @@ interface CoverLetterPreviewProps {
 export function CoverLetterPreview({ data, template }: CoverLetterPreviewProps) {
     const today = new Date().toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
 
+    // Map new template IDs to existing styles for Cover Letter
+    const getEffectiveStyle = (tid: TemplateId): "clean" | "modern" | "minimal" => {
+        if (tid === "clean" || tid === "classic-02" || tid === "executive-06" || tid === "academic-07" || tid === "international-10") return "clean";
+        if (tid === "modern" || tid === "modern-01" || tid === "tech-05" || tid === "creative-04" || tid === "freelance-09") return "modern";
+        return "minimal";
+    };
+
+    const style = getEffectiveStyle(template);
+
     return (
         <div className="w-full h-full bg-white text-black overflow-y-auto print:overflow-visible" id="cl-preview">
             <div className={cn(
                 "aspect-[210/297] w-full min-h-[1000px] mx-auto bg-white p-[15mm] shadow-xl print:shadow-none transition-all duration-300 flex flex-col",
-                template === "clean" && "font-serif",
-                template === "modern" && "font-sans",
-                template === "minimal" && "font-mono"
+                style === "clean" && "font-serif",
+                style === "modern" && "font-sans",
+                style === "minimal" && "font-mono"
             )}>
 
                 {/* === CLASSIC FORMAL === */}
-                {template === "clean" && (
+                {style === "clean" && (
                     <div className="flex-1 flex flex-col">
                         <header className="border-b border-gray-300 pb-6 mb-8 flex justify-between items-end">
                             <div>
@@ -67,7 +76,7 @@ export function CoverLetterPreview({ data, template }: CoverLetterPreviewProps) 
                 )}
 
                 {/* === MODERN CONVERSATIONAL === */}
-                {template === "modern" && (
+                {style === "modern" && (
                     <div className="flex-1 flex flex-col relative">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -100,7 +109,7 @@ export function CoverLetterPreview({ data, template }: CoverLetterPreviewProps) 
                 )}
 
                 {/* === EXECUTIVE POLISHED === */}
-                {template === "minimal" && (
+                {style === "minimal" && (
                     <div className="flex-1 flex flex-col bg-stone-50 p-8 -m-8 h-[calc(100%+4rem)]">
                         <div className="flex justify-between items-start mb-12">
                             <div className="w-12 h-12 bg-emerald-900 text-white flex items-center justify-center font-bold text-xl">

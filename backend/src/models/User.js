@@ -12,6 +12,27 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
     },
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String,
+    },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      required:true,
+      sparse: true,
+    },
+    avatarUrl: {
+      type: String,
+    },
+    location: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
 
     role: {
       type: String,

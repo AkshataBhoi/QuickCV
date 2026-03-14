@@ -4,15 +4,21 @@ import {
     getUserResumes,
     getAllResumes,
     getResumeById,
+    getResumeForPrint,
     deleteResume
 } from "../controllers/resume.controller.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", saveResume);
-router.get("/", getAllResumes); // New Auth-less route
-router.get("/user/:userId", getUserResumes);
-router.get("/:id", getResumeById);
-router.delete("/:id", deleteResume);
+router.post("/", authMiddleware, saveResume);
+router.get("/", authMiddleware, getAllResumes);
+router.get("/user/:userId", authMiddleware, getUserResumes);
+
+// Public route for the print/download page (no auth needed — opens in new tab)
+router.get("/:id/print", getResumeForPrint);
+
+router.get("/:id", authMiddleware, getResumeById);
+router.delete("/:id", authMiddleware, deleteResume);
 
 export default router;

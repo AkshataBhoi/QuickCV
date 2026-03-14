@@ -13,29 +13,25 @@ import {
     Loader2,
     Sparkles,
     Link as LinkIcon,
-    Github,
-    Linkedin,
-    MapPin,
-    Mail,
-    Phone,
-    ArrowRight,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
     TemplateSelector,
-    TemplateId,
 } from "@/components/builder/TemplateSelector";
+import { TEMPLATES, getTemplateById, TemplateId } from "@/lib/templates.config";
 import { ChangeTemplateDialog } from "@/components/builder/ChangeTemplateDialog";
 import { FormSection } from "@/components/builder/FormSection";
 import { cn } from "@/lib/utils";
 import { Toast, useToast } from "@/components/ui/toast";
 import { useUser } from "@/components/providers/user-provider";
+import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { SaveFileDialog } from "@/components/shared/SaveFileDialog";
 import { ResumeData } from "@/lib/types";
 import { DEFAULT_RESUME_DATA } from "@/lib/defaultResumeData";
-import { AISummaryModal } from "@/components/builder/AISummaryModal";
-import { AISkillsModal } from "@/components/builder/AISkillsModal";
+const AISummaryModal = lazy(() => import("@/components/builder/AISummaryModal").then(mod => ({ default: mod.AISummaryModal })));
+const AISkillsModal = lazy(() => import("@/components/builder/AISkillsModal").then(mod => ({ default: mod.AISkillsModal })));
+import { useAuth } from "@/context/AuthContext";
 
 // Lazy load heavy preview component
 const ResumePreview = lazy(() =>
@@ -53,10 +49,22 @@ export default function ResumeBuilderWrapper() {
 }
 
 function ResumeBuilderPage() {
+    const { user: authUser } = useAuth();
     const { user } = useUser();
-    const [template, setTemplate] = useState<TemplateId>(
-        user.preferredTemplate || "clean"
-    );
+    const searchParams = useSearchParams();
+    const resumeId = searchParams.get("id");
+    const templateParam = searchParams.get("template");
+    const { addFile } = useDashboardFile();
+
+    const getInitialTemplate = (): TemplateId => {
+        if (templateParam) {
+            const t = getTemplateById(templateParam);
+            if (t) return t.id;
+        }
+        return user.preferredTemplate || "modern-01";
+    };
+
+    const [template, setTemplate] = useState<TemplateId>(getInitialTemplate());
     const [isClient, setIsClient] = useState(false);
     const [resumeTitle, setResumeTitle] = useState("Untitled Resume");
     const [saveStatus, setSaveStatus] = useState<"Saved" | "Saving..." | "Unsaved">("Saved");
@@ -76,18 +84,68 @@ function ResumeBuilderPage() {
         useToast();
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
     const [skillsModalOpen, setSkillsModalOpen] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-    const searchParams = useSearchParams();
-    const resumeId = searchParams.get("id");
+    // Debounced ATS Analysis
+    useEffect(() => {
+        if (!isClient) return;
+
+        const timer = setTimeout(async () => {
+            if (data.fullName || data.summary || data.experience.length > 0) {
+                setIsAnalyzing(true);
+                try {
+                    const token = await authUser?.getIdToken();
+                    const headers: Record<string, string> = { "Content-Type": "application/json" };
+                    if (token) headers["Authorization"] = `Bearer ${token}`;
+                    if (authUser?.uid) headers["x-user-id"] = authUser.uid;
+
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/ai/resume/analyze-ats`, {
+                        method: "POST",
+                        headers,
+                        body: JSON.stringify({
+                            userId: authUser?.uid || user.id, // Prefer Firebase UID
+                            resumeId: data.id,
+                            content: data,
+                            jobDescription: "" // Could be added later
+                        }),
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        // You can store this in a local state if needed for immediate UI updates
+                        // but the backend already saved it to the resume object
+                        console.log("ATS Analysis Updated:", result.analysis);
+                    }
+                } catch (error) {
+                    console.error("ATS Analysis error:", error);
+                } finally {
+                    setIsAnalyzing(false);
+                }
+            }
+        }, 800); // 0.8s debounce
+
+        return () => clearTimeout(timer);
+    }, [data, user.id, isClient]);
 
     useEffect(() => {
         setIsClient(true);
+
+        // Update template if param changes
+        if (templateParam) {
+            const t = getTemplateById(templateParam);
+            if (t) setTemplate(t.id);
+        }
 
         const fetchResume = async () => {
             if (!resumeId || resumeId === "resume-draft") return;
 
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${resumeId}`);
+                const token = await authUser?.getIdToken();
+                const headers: Record<string, string> = {};
+                if (token) headers["Authorization"] = `Bearer ${token}`;
+                if (authUser?.uid) headers["x-user-id"] = authUser.uid;
+
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${resumeId}`, { headers });
                 const result = await response.json();
 
                 if (response.ok && result.data) {
@@ -169,12 +227,16 @@ function ResumeBuilderPage() {
     const onSaveFile = async (name: string) => {
         setSaveStatus("Saving...");
         try {
+            const token = await authUser?.getIdToken();
+            const headers: Record<string, string> = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+            if (authUser?.uid) headers["x-user-id"] = authUser.uid;
+
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers,
                 body: JSON.stringify({
+                    ownerId: authUser?.uid || user.id,
                     id: data.id,
                     title: name,
                     templateId: template,
@@ -189,9 +251,11 @@ function ResumeBuilderPage() {
             }
 
             setData(prev => ({ ...prev, id: result.data._id }));
+            addFile(result.data);
             setResumeTitle(name);
             setSaveStatus("Saved");
-            displayToast("Resume saved successfully!", "success");
+            setSaveDialogOpen(false);
+            displayToast("File saved successfully ✓", "success");
         } catch (error: any) {
             console.error("Save error:", error);
             setSaveStatus("Unsaved");
@@ -291,16 +355,15 @@ function ResumeBuilderPage() {
                         />
                         <span className="text-[10px] text-muted-foreground">{saveStatus}</span>
                     </div>
+                    {isAnalyzing && (
+                        <div className="flex items-center gap-2 ml-4 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
+                            <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                            <span className="text-[10px] font-medium text-primary uppercase tracking-wider">ATS Scanning...</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* <Button
-                        size="sm"
-                        className="md:flex hidden bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 border-0"
-                        onClick={() => handleAIImprove("summary")}
-                    >
-                        <Sparkles className="h-4 w-4 mr-2" /> Generate with AI
-                    </Button> */}
 
                     <Button
                         variant="ghost"
@@ -310,16 +373,6 @@ function ResumeBuilderPage() {
                     >
                         Change Template
                     </Button>
-
-                    {/* <Button
-                        variant="ghost"
-                        size="sm"
-                        className="hidden md:flex text-muted-foreground hover:text-white"
-                        onClick={handleDuplicate}
-                    >
-                        Duplicate
-                    </Button> */}
-
                     <Button
                         variant="ghost"
                         size="sm"
@@ -328,19 +381,13 @@ function ResumeBuilderPage() {
                     >
                         <Save className="h-4 w-4 mr-2" /> Save
                     </Button>
-                    {/* <Button
-                        size="sm"
-                        className="bg-white/10 text-white hover:bg-white/20"
-                        onClick={handleDownload}
-                    >
-                        Download
-                    </Button> */}
                     <SaveFileDialog
                         open={saveDialogOpen}
                         onOpenChange={setSaveDialogOpen}
                         onSave={onSaveFile}
                         defaultName={resumeTitle}
                         title="Save Resume"
+                        isLoading={saveStatus === "Saving..."}
                     />
                 </div>
             </header>
@@ -436,14 +483,14 @@ function ResumeBuilderPage() {
                                             </button>
                                         </span>
                                     ))}
-                                    <Button
+                                    {/* <Button
                                         variant="ghost"
                                         size="sm"
                                         className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[10px] border border-emerald-500/20"
                                         onClick={() => setSkillsModalOpen(true)}
                                     >
                                         <Sparkles className="h-3 w-3 mr-1" /> Suggest Skills
-                                    </Button>
+                                    </Button> */}
                                 </div>
                             </div>
                         </FormSection>

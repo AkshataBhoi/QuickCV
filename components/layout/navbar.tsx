@@ -14,7 +14,7 @@ const navLinks = [
     { name: "Features", href: "/#features" },
     { name: "How it Works", href: "/#how-it-works" },
     { name: "Pricing", href: "/#pricing" },
-    
+
 ];
 
 export function Navbar() {
@@ -57,12 +57,13 @@ export function Navbar() {
                 </ul>
 
                 <div className="hidden lg:flex items-center gap-6">
-                    {/* <Link
-                        href="/login"
-                        className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-all duration-300"
+                    <Button
+                        variant="ghost"
+                        onClick={openModal}
+                        className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 border-indigo-500 hover:text-indigo-600 hover:bg-gray-50 transition-all duration-300"
                     >
                         Login
-                    </Link> */}
+                    </Button>
                     <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -109,13 +110,16 @@ export function Navbar() {
                             ))}
                             <hr className="border-gray-100" />
                             <div className="flex flex-col gap-4">
-                                <Link
-                                    href="/login"
-                                    className="text-lg font-medium text-gray-600 hover:text-indigo-600"
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        openModal();
+                                    }}
+                                    className="text-lg font-medium text-gray-600 hover:text-indigo-600 justify-start h-auto p-0"
                                 >
                                     Login
-                                </Link>
+                                </Button>
                                 <Button
                                     onClick={() => {
                                         setIsMobileMenuOpen(false);

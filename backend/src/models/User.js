@@ -60,6 +60,14 @@ const userSchema = new mongoose.Schema(
         default: 0,
       },
     },
+    coverLetterCredits: {
+      type: Number,
+      default: 0,
+    },
+    resumeDownloadCredits: {
+      type: Number,
+      default: 1,
+    },
     aiUsage: {
       summaryGenerations: { type: Number, default: 0 },
       skillSuggestions: { type: Number, default: 0 },

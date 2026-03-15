@@ -58,7 +58,9 @@ export const updateProfile = async (req, res) => {
         avatarUrl: avatarUrl || "",
         location: location || "",
         phone: phone || "",
-        plan: "free"
+        plan: "free",
+        coverLetterCredits: 0,
+        resumeDownloadCredits: 1
       });
     } else {
 
@@ -123,6 +125,46 @@ export const getProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch profile"
+    });
+  }
+};
+
+/**
+ * @desc Upgrade user to premium for demo/social share
+ * @route POST /api/users/upgrade-demo
+ */
+export const upgradeDemo = async (req, res) => {
+  try {
+    const firebaseUid = req.user?.uid;
+    console.log(">>> Upgrade Demo for UID:", firebaseUid);
+
+    if (!firebaseUid) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { firebaseUid },
+      {
+        plan: "premium",
+        coverLetterCredits: 10,
+        resumeDownloadCredits: 7
+      },
+      { new: true, upsert: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+      message: "Successfully upgraded to Premium!"
+    });
+  } catch (error) {
+    console.error("Upgrade Demo Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to upgrade plan"
     });
   }
 };

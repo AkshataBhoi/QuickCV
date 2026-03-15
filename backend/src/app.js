@@ -35,6 +35,8 @@ app.use(cors({
   optionsSuccessStatus: 204
 }));
 
+app.options("*", cors());
+
 // 🔥 3. Body parsers AFTER CORS
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));

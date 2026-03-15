@@ -9,7 +9,7 @@ import cors from "cors";
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
+      "http://localhost:5000",
       "https://quick-cv-xi.vercel.app"
     ],
     credentials: true

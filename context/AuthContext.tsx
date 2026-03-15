@@ -11,7 +11,9 @@ import {
     setPersistence,
     browserLocalPersistence,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getAuthInstance } from "@/lib/firebase";
+
+const auth = getAuthInstance();
 
 interface AuthContextType {
     user: User | null;

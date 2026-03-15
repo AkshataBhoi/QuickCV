@@ -9,25 +9,19 @@ import userRoutes from "./routes/user.routes.js"
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// 🔥 1. NUCLEAR OPTIONS HANDLER FIRST
-app.options("*", (req, res) => {
-  console.log(`✅ OPTIONS ${req.path} from ${req.get('Origin')}`);
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-User-Id');
-  res.status(200).end();
-});
-
-// 🔥 2. SINGLE CORS - BEFORE EVERYTHING ELSE
+// CORS configuration
 const whitelist = [
   'https://quick-cv-xi.vercel.app',
-  'http://localhost:5000'
+  'http://localhost:3000',
+  'http://localhost:5173'
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    console.log(`🌐 CORS check for origin: ${origin}`);
-    if (!origin || whitelist.includes(origin)) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log(`❌ CORS blocked origin: ${origin}`);
@@ -36,8 +30,9 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id'],
-  preflightContinue: false
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // 🔥 3. Body parsers AFTER CORS
@@ -82,9 +77,6 @@ app.use("*", (req, res) => {
   });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`✅ Health: http://localhost:${PORT}/api/health`);
-});
+// No app.listen here, it's in server.js
 
 export default app;

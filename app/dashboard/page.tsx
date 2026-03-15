@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { Button } from "@/components/ui/button";
 import { FileText, Plus, ArrowRight, Zap, Target, BookOpen, Upload, Sparkles, TrendingUp, Download } from "lucide-react";
 import Link from "next/link";

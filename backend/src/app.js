@@ -47,6 +47,10 @@ app.get("/api/health", (_, res) => {
   res.status(200).json({ Status: "OK", timestamp: new Date().toISOString() });
 });
 
+app.get("/", (req, res) => {
+  res.send("🚀 QuickCV Backend Running");
+});
+
 // 🔥 5. Routes
 app.use("/api/ai", aiRoutes);
 app.use("/api/resume", resumeRoutes);

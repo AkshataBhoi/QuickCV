@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 5000
 // CORS configuration
 const whitelist = [
   'https://quick-cv-xi.vercel.app',
+  'https://quick-cv.vercel.app', // Added potential alias
   'http://localhost:3000',
   'http://localhost:5173'
 ];

@@ -1132,20 +1132,9 @@ function ResumeBuilderPage() {
         onUnlock={async () => {
           if (!authUser) return;
           try {
-            const token = await authUser.getIdToken();
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/users/upgrade-demo`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                  "x-user-id": authUser.uid,
-                },
-              },
-            );
-            const resData = await response.json();
-            if (response.ok && resData.success) {
+            const response = await apiClient.post('/api/users/upgrade-demo');
+            const resData = response.data;
+            if (resData.success) {
               await updateUser({
                 accountType: "premium",
                 coverLetterCredits: 10,

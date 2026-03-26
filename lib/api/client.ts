@@ -9,13 +9,24 @@ import { getAuthInstance } from '@/lib/firebase';
  * - x-user-id header for backend identification
  * - Credential support for cookies
  */
+const getBaseURL = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  // Cleanup URL: remove trailing slashes, spaces, or accidental comments
+  return url.trim().replace(/\/+$/, '');
+};
+
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  baseURL: getBaseURL(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Debug log for production connectivity (only if not in browser or if specifically needed)
+if (typeof window !== 'undefined') {
+  console.log('🌐 API Base URL:', apiClient.defaults.baseURL);
+}
 
 // Request interceptor to attach Firebase ID tokens
 apiClient.interceptors.request.use(async (config) => {

@@ -73,7 +73,7 @@ export default function ResumeUploadPage() {
         } finally {
             setAnalyzing(false);
         }
-    }, [user?.id, displayToast]);
+    }, [user?.id]);
 
     // Handle file drop/selection
     const onDrop = useCallback(async (acceptedFiles: File[]) => {

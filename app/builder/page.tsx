@@ -19,7 +19,7 @@ import {
 } from "@/components/builder/TemplateSelector";
 import { FormSection } from "@/components/builder/FormSection";
 import { cn } from "@/lib/utils";
-import { Toast, useToast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { useUser } from "@/components/providers/user-provider";
 import { SaveFileDialog } from "@/components/shared/SaveFileDialog";
 import { ResumeData } from "@/lib/types";
@@ -69,8 +69,6 @@ function BuilderPage() {
 
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const { showToast, toastMessage, toastType, displayToast, hideToast } =
-    useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -159,8 +157,7 @@ function BuilderPage() {
       myFiles.push(newFile);
     }
     localStorage.setItem("my_files", JSON.stringify(myFiles));
-
-    displayToast("Resume saved successfully!", "success");
+    toast.success("Resume saved successfully!");
   };
 
   if (!isClient) {
@@ -173,12 +170,6 @@ function BuilderPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in-up flex flex-col h-screen overflow-hidden">
-      <Toast
-        message={toastMessage}
-        isVisible={showToast}
-        onClose={hideToast}
-        type={toastType}
-      />
 
       {/* Top Bar */}
       <header className="h-16 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-4 md:px-6 shrink-0 z-50">

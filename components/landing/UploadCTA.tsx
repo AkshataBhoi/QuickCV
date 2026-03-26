@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Upload, ArrowRight, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/components/providers/modal-provider";
+import apiClient from "@/lib/api/client";
 
 
 export function UploadCTA() {
@@ -27,22 +28,23 @@ export function UploadCTA() {
         formData.append("resume", file);
 
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const response = await fetch(`${API_URL}/api/ats/upload`, {
-                method: "POST",
-                body: formData,
+            const response = await apiClient.post('/api/ats/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
-            const data = await response.json();
-            if (response.ok) {
+            const { data } = response;
+            if (data.success) {
                 // Redirect to ATS analysis page with the new resume ID and step 2
                 router.push(`/dashboard/ats?resumeId=${data.data.resumeId}&step=2`);
             } else {
                 alert(data.message || "Upload failed. Please try again.");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Upload error:", error);
-            alert("An error occurred during upload. Please try again.");
+            const data = error.response?.data;
+            alert(data?.message || "An error occurred during upload. Please try again.");
         } finally {
             setUploading(false);
         }
@@ -98,7 +100,7 @@ export function UploadCTA() {
                                 className="w-full sm:w-auto relative group overflow-hidden"
                             >
                                 <div className="absolute inset-0 rounded-xl bg-indigo-600 opacity-80 group-hover:opacity-100 transition-opacity" />
-                                <div className="relative flex items-center justify-center gap-3 px-10 py-5  text-white font-bold text-xl rounded-2xl border border-white/20 backdrop-blur-sm shadow-[0_0_20px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all">
+                                <div className="relative flex items-center justify-center gap-3 px-10 py-5  text-white font-bold text-xl md:xl sm:xs rounded-2xl border border-white/20 backdrop-blur-sm shadow-[0_0_20px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all">
                                     {/* <Upload size={22} className=" transition-transform" /> */}                       
                                     <span>Upload Resume</span>                                    
                                     <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />

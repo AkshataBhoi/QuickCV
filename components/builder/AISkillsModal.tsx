@@ -21,50 +21,38 @@ interface AISkillsModalProps {
 }
 
 import { useUser } from "@/components/providers/user-provider";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "sonner";
+import apiClient from "@/lib/api/client";
 
 export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: AISkillsModalProps) {
     const { user } = useUser();
-    const { displayToast } = useToast();
-    const [jobDescription, setJobDescription] = useState("");
+    const [prompt, setPrompt] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
     const handleAnalyze = async () => {
-        if (!jobDescription) return;
+        if (!prompt) return;
 
         setIsAnalyzing(true);
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
         try {
-            const response = await fetch(`${API_URL}/api/ai/resume/skills`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userId: user.id,
-                    jobDescription,
-                }),
+            const response = await apiClient.post('/api/ai/resume/skills', {
+                userId: user.id,
+                jobDescription: prompt,
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                if (data.code === "AI_LIMIT_REACHED") {
-                    displayToast(data.message, "error");
-                } else {
-                    displayToast(data.message || "Failed to extract skills", "error");
-                }
-                return;
-            }
+            const { data } = response;
 
             setSuggestedSkills(data.skills || []);
-            displayToast("Skills suggested by AI!", "success");
-        } catch (error) {
+            toast.success("Skills suggested by AI!");
+        } catch (error: any) {
             console.error("Error extracting skills:", error);
-            displayToast("Backend server not reachable. Please ensure the backend is running on port 5000.", "error");
+            const data = error.response?.data;
+            if (data?.code === "AI_LIMIT_REACHED") {
+                toast.error(data.message);
+            } else {
+                toast.error(data?.message || "Failed to extract skills");
+            }
         } finally {
             setIsAnalyzing(false);
         }
@@ -80,7 +68,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
         onAddSkills(selectedSkills);
         onClose();
         // Reset state for next time
-        setJobDescription("");
+        setPrompt("");
         setSuggestedSkills([]);
         setSelectedSkills([]);
     };
@@ -88,7 +76,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const handleAddAll = () => {
         onAddSkills(suggestedSkills);
         onClose();
-        setJobDescription("");
+        setPrompt("");
         setSuggestedSkills([]);
         setSelectedSkills([]);
     };
@@ -113,15 +101,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
                                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Job Description</label>
                                 <Textarea
                                     placeholder="Paste the job requirements here..."
-                                    value={jobDescription}
-                                    onChange={(e) => setJobDescription(e.target.value)}
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
                                     className="bg-white/5 border-white/10 focus:border-emerald-500/50 min-h-[200px] resize-none transition-colors"
                                 />
                             </div>
                             <Button
                                 onClick={handleAnalyze}
                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white border-0"
-                                disabled={!jobDescription || isAnalyzing}
+                                disabled={!prompt || isAnalyzing}
                             >
                                 {isAnalyzing ? (
                                     <>

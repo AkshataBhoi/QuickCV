@@ -58,6 +58,11 @@ const resumeSchema = new mongoose.Schema(
       lastAnalyzed: { type: Date }
     },
     atsHash: { type: String }, // cache key for content+JD
+    source: {
+      type: String,
+      enum: ["generated", "uploaded"],
+      default: "generated",
+    },
     analysisHistory: [{
       score: Number,
       date: { type: Date, default: Date.now }

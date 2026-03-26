@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ModalProvider } from "@/components/providers/modal-provider";
 import { UserProvider } from "@/components/providers/user-provider";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
     subsets: ["latin"],
@@ -15,33 +16,55 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-    title: {
-        default: "QuickCV ",
-        template: "%s | ResuStack AI"
-    },
-    description: "The free AI resume builder software engineers actually use to get interviews. ATS-optimized, developer-focused, and completely free.",
-    metadataBase: new URL('https://resustack.ai'),
-    openGraph: {
-        type: 'website',
-        locale: 'en_US',
-        url: 'https://resustack.ai',
-        title: "ResuStack AI - Free AI Resume Builder",
-        description: "Build a developer-optimized resume in minutes. Free, ATS-friendly, and powered by AI.",
-        siteName: 'ResuStack AI',
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: "ResuStack AI - Free AI Resume Builder",
-        description: "The free AI resume builder software engineers actually use to get interviews.",
-    },
+  title: {
+    default: "QuickCV",
+    template: "%s | QuickCV"
+  },
+  description:
+    "QuickCV is an AI-powered resume builder to create ATS-friendly resumes in minutes. Fast, modern, and developer-focused.",
 
-    keywords: ["resume builder", "ai resume", "ats friendly resume", "software engineer resume", "developer resume", "free resume builder"],
-    authors: [{ name: "ResuStack AI" }],
-    creator: "ResuStack AI",
-    alternates: {
-        canonical: 'https://resustack.ai',
-    },
-    manifest: '/manifest.webmanifest',
+  metadataBase: new URL("https://quick-cv-xi.vercel.app/"), // update when domain ready
+
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://quick-cv-xi.vercel.app/",
+    title: "QuickCV - AI Resume Builder",
+    description:
+      "Build ATS-optimized resumes instantly with QuickCV. Fast, clean, and professional.",
+    siteName: "QuickCV",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "QuickCV - AI Resume Builder",
+    description:
+      "Create job-winning resumes with AI in seconds using QuickCV.",
+  },
+
+  keywords: [
+    "QuickCV",
+    "AI resume builder",
+    "ATS resume",
+    "resume builder India",
+    "developer resume",
+    "free resume builder",
+  ],
+
+  authors: [{ name: "QuickCV" }],
+  creator: "QuickCV",
+
+  alternates: {
+    canonical: "https://quick-cv-xi.vercel.app/",
+  },
+
+  manifest: "/manifest.webmanifest",
+
+  icons: {
+  icon: "/favicon.ico",
+  shortcut: "/favicon.ico",
+  apple: "/logo.png",
+},
 };
 
 export const viewport = {
@@ -78,6 +101,7 @@ export default function RootLayout({
                             <ModalProvider>
                                 {children}
                             </ModalProvider>
+                            <Toaster />
                         </UserProvider>
                     </AuthProvider>
                 </ThemeProvider>

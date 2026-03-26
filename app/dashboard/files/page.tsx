@@ -2,12 +2,13 @@
 
 import { TableRowActions } from "@/components/dashboard/TableRowActions";
 import { Button } from "@/components/ui/button";
-import { FileText, Search, Layout } from "lucide-react";
+import { FileText, Search, Layout, Plus } from "lucide-react";
 import { useState } from "react";
 import { FilePreviewDialog } from "@/components/shared/FilePreviewDialog";
 import { useRouter } from "next/navigation";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import Link from "next/link";
+import { FileCard } from "@/components/shared/FileCard";
 
 export default function MyFilesPage() {
     const { files: globalFiles, setActiveFile, deleteFile, isLoading } = useDashboardFile();
@@ -31,7 +32,7 @@ export default function MyFilesPage() {
         if (file.type === "Resume") {
             router.push(`/dashboard/resume-builder?id=${file.id}`);
         } else if (file.type === "Cover Letter") {
-            router.push("/dashboard/cover-letter");
+            router.push(`/dashboard/cover-letter?id=${file.id}`);
         } else if (file.type === "ATS Report") {
             handleView(file);
         }
@@ -66,12 +67,37 @@ export default function MyFilesPage() {
                         />
                     </div>
                     <Link href="/dashboard/resume-builder">
-                        <Button size="sm">Create New</Button>
+                        <Button size="sm" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] border-0">
+                        <Plus className="mr-2 h-4 w-4" />Create New</Button>
                     </Link>
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/20 backdrop-blur-sm">
+            {/* Mobile View: Cards */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {isLoading && filteredFiles.length === 0 ? (
+                    <div className="p-12 text-center bg-black/20 border border-white/10 rounded-2xl">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                        <p className="text-muted-foreground">Loading files...</p>
+                    </div>
+                ) : (
+                    <>
+                        {filteredFiles.map((file) => (
+                            <FileCard
+                                key={file.id}
+                                file={file}
+                                onView={() => handleView(file)}
+                                onEdit={() => handleEdit(file)}
+                                onDownload={() => handleDownload(file)}
+                                onDelete={() => handleDelete(file.id)}
+                            />
+                        ))}
+                    </>
+                )}
+            </div>
+
+            {/* Desktop View: Table */}
+            <div className="hidden md:block rounded-2xl border border-white/10 overflow-hidden bg-black/20 backdrop-blur-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-white/5 text-muted-foreground font-medium text-xs uppercase tracking-wider border-b border-white/5">
@@ -124,6 +150,10 @@ export default function MyFilesPage() {
                                                     onEdit={() => handleEdit(file)}
                                                     onDownload={() => handleDownload(file)}
                                                     onDelete={() => handleDelete(file.id)}
+                                                    isViewDisabled={
+                                                        (file.type === "ATS Report" || file.type === "ATS Scan" || file.status === "ATS_SCAN") || 
+                                                        !(file.source === "generated" || (file.status === "DRAFT" || file.status === "Draft") || !!file.url)
+                                                    }
                                                 />
                                             </td>
                                         </tr>

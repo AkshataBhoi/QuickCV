@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { cn } from "@/lib/utils";
 import { TEMPLATES, getTemplateById } from "@/lib/templates.config";
 import { ResumeData } from "@/lib/types";
@@ -9,7 +10,7 @@ interface ResumePreviewProps {
   template: string;
 }
 
-export function ResumePreview({ data, template }: ResumePreviewProps) {
+export const ResumePreview = React.memo(({ data, template }: ResumePreviewProps) => {
   const selectedTemplateConfig = getTemplateById(template);
   const SelectedTemplate = selectedTemplateConfig?.component || TEMPLATES[0].component;
 
@@ -25,4 +26,6 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
       </div>
     </div>
   );
-}
+});
+
+ResumePreview.displayName = "ResumePreview";

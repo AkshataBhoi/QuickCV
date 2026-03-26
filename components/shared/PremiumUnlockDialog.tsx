@@ -33,13 +33,18 @@ export function PremiumUnlockDialog({ open, onClose, onUnlock }: PremiumUnlockDi
                         <Lock className="h-8 w-8 text-white" />
                     </div>
 
-                    <h2 className="text-2xl font-bold text-white mb-2">Unlock Premium Generators</h2>
+                    <h2 className="text-2xl font-bold text-white mb-2">Unlock Premium Features</h2>
                     <p className="text-indigo-200/70 mb-8 leading-relaxed">
-                        Get access to advanced AI tools, premium templates, and unlimited downloads.
+                        Access all templates, unlimited cover letters, and more.
                     </p>
 
                     <div className="space-y-3 mb-8 text-left max-w-xs mx-auto">
-                        {["Unlimited Cover Letters", "Premium Design Templates", "ATS Formatting Checks", "PDF & Word Export"].map((feature) => (
+                        {[
+                            "10 Resume Templates",
+                            "10 AI Cover Letters",
+                            "7 Resume Downloads",
+                            "Premium Templates"
+                        ].map((feature) => (
                             <div key={feature} className="flex items-center gap-3 text-sm text-gray-300">
                                 <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
                                     <Check className="h-3 w-3" />
@@ -49,13 +54,24 @@ export function PremiumUnlockDialog({ open, onClose, onUnlock }: PremiumUnlockDi
                         ))}
                     </div>
 
-                    <Button
-                        onClick={onUnlock}
-                        className="w-full h-12 text-base font-semibold bg-white text-indigo-950 hover:bg-white/90 shadow-xl shadow-indigo-500/10"
-                    >
-                        Unlock Now - $0 (Demo)
-                    </Button>
-                    <p className="text-[10px] text-muted-foreground mt-4 uppercase tracking-widest">No credit card required for demo</p>
+                    <div className="space-y-3">
+                        <Button
+                            onClick={onUnlock}
+                            className="w-full h-12 text-base font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-500/10"
+                        >
+                            Unlock Premium
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://quickcv.app`, '_blank');
+                                onUnlock();
+                            }}
+                            variant="outline"
+                            className="w-full h-12 text-base font-semibold border-white/10 text-white hover:bg-white/5"
+                        >
+                            Share to Unlock
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

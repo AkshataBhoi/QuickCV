@@ -14,8 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Sparkles, Check, Copy, RotateCcw } from "lucide-react";
 import { useUser } from "@/components/providers/user-provider";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import apiClient from "@/lib/api/client";
 
 interface AISummaryModalProps {
     isOpen: boolean;
@@ -31,7 +32,6 @@ interface GeneratedSummaries {
 
 export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalProps) {
     const { user } = useUser();
-    const { displayToast } = useToast();
     const [jobTitle, setJobTitle] = useState("");
     const [jobDescription, setJobDescription] = useState("");
     const [experienceLevel, setExperienceLevel] = useState("Junior");
@@ -45,40 +45,29 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
         if (!jobTitle) return;
 
         setIsGenerating(true);
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
         try {
-            const response = await fetch(`${API_URL}/api/ai/generate-summary`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userId: user?.id || undefined,
-                    targetJobTitle: jobTitle,
-                    experienceLevel,
-                    yearsOfExperience,
-                    currentRole,
-                    keySkills,
-                    jobDescription,
-                }),
+            const response = await apiClient.post('/api/ai/generate-summary', {
+                userId: user?.id || undefined,
+                targetJobTitle: jobTitle,
+                experienceLevel,
+                yearsOfExperience,
+                currentRole,
+                keySkills,
+                jobDescription,
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                if (data.code === "AI_LIMIT_REACHED") {
-                    displayToast(data.message, "error");
-                } else {
-                    displayToast(data.message || "Failed to generate summary", "error");
-                }
-                return;
-            }
+            const { data } = response;
 
             setGeneratedSummaries(data);
-            displayToast("Generated 3 ATS-optimized summaries!", "success");
-        } catch (error) {
+            toast.success("Generated 3 ATS-optimized summaries!");
+        } catch (error: any) {
             console.error("Error generating summary:", error);
-            displayToast("Failed to reach the AI engine. Please try again.", "error");
+            const data = error.response?.data;
+            if (data?.code === "AI_LIMIT_REACHED") {
+                toast.error(data.message);
+            } else {
+                toast.error(data?.message || "Failed to generate summary");
+            }
         } finally {
             setIsGenerating(false);
         }

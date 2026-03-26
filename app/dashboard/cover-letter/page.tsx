@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Save, Layout, ChevronLeft } from "lucide-react";
+import { Sparkles, Save, Layout, ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   TemplateSelector,
@@ -15,27 +15,25 @@ import {
   CoverLetterData,
 } from "@/components/builder/CoverLetterPreview";
 import { ChangeTemplateDialog } from "@/components/builder/ChangeTemplateDialog";
-import { PremiumUnlockDialog } from "@/components/shared/PremiumUnlockDialog";
 import Link from "next/link";
-import { Toast, useToast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useUser } from "@/components/providers/user-provider";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { SaveFileDialog } from "@/components/shared/SaveFileDialog";
+import apiClient from "@/lib/api/client";
 
 export default function CoverLetterPage() {
   const { user: authUser } = useAuth();
-  const { user: profileUser } = useUser();
-  const [isPremium, setIsPremium] = useState(false);
-  const [showUnlock, setShowUnlock] = useState(true); // Show dialog on load
+  const { user: profileUser, updateUser } = useUser();
   const [template, setTemplate] = useState<TemplateId>(
     profileUser.preferredTemplate || "modern-01"
   );
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [changeTemplateOpen, setChangeTemplateOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { showToast, toastMessage, toastType, displayToast, hideToast } =
-    useToast();
+
+  const isPremium = profileUser.accountType === "premium";
 
   // Mock Data - Initialize with user data
   const [data, setData] = useState<CoverLetterData>({
@@ -49,22 +47,19 @@ export default function CoverLetterPage() {
     body: "I am writing to express my strong interest in the Senior Product Engineer role at TechFlow Systems...",
   });
 
-  // Update data when user context or template changes (if needed, but mainly for initial load)
-  useEffect(() => {
-    setData((prev) => ({
-      ...prev,
-      fullName: `${profileUser.firstName} ${profileUser.lastName}`,
-      email: profileUser.email,
-      phone: profileUser.phone,
-      city: profileUser.location,
-    }));
-  }, [profileUser]);
-
   const [generating, setGenerating] = useState(false);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (!isPremium) return;
+    
+    if (profileUser.coverLetterCredits <= 0) {
+        toast.error("You have run out of Cover Letter credits. Upgrade for more!");
+        return;
+    }
+
     setGenerating(true);
-    setTimeout(() => {
+    // Simulate API call for generation and credit deduction
+    setTimeout(async () => {
       setData((prev) => ({
         ...prev,
         body: `Dear ${prev.hiringManager || "Hiring Manager"
@@ -74,12 +69,32 @@ export default function CoverLetterPage() {
           }'s continued success.\n\nSincerely,\n${prev.fullName}`,
       }));
       setGenerating(false);
+      
+      // Update local state credits (in real app, this comes from backend response)
+      await updateUser({ coverLetterCredits: profileUser.coverLetterCredits - 1 });
+      toast.success("Cover letter generated! 1 credit used.");
     }, 1500);
   };
 
-  const handleUnlock = () => {
-    setIsPremium(true);
-    setShowUnlock(false);
+  const handleUnlock = async () => {
+    if (!authUser) return;
+    try {
+        const response = await apiClient.post('/api/users/upgrade-demo', {
+            userId: authUser.uid
+        });
+
+        const resData = response.data;
+        if (resData.success) {
+            await updateUser({ 
+                accountType: "premium",
+                coverLetterCredits: 10,
+                resumeDownloadCredits: 7
+            });
+            toast.success("Welcome to Premium! Credits added.");
+        }
+    } catch (error) {
+        console.error("Upgrade error:", error);
+    }
   };
 
   const handleSaveClick = () => {
@@ -88,39 +103,30 @@ export default function CoverLetterPage() {
   };
 
   const { addFile } = useDashboardFile();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const onSaveFile = async (name: string) => {
     setIsSaving(true);
     try {
-      const token = await authUser?.getIdToken();
-      const response = await fetch(`${API_URL}/api/resume`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "x-user-id": authUser?.uid || ""
-        },
-        body: JSON.stringify({
-          title: name,
-          content: data,
-          templateId: template,
-          type: "cover-letter"
-        }),
+      const response = await apiClient.post('/api/resume', {
+        title: name,
+        content: data,
+        templateId: template,
+        type: "cover-letter"
       });
 
-      const result = await response.json();
+      const result = response.data;
 
-      if (response.ok && result.data) {
+      if (result.data) {
         addFile(result.data);
         setSaveDialogOpen(false);
-        displayToast("File saved successfully ✓", "success");
+        toast.success("File saved successfully ✓");
       } else {
         throw new Error(result.message || "Failed to save");
       }
     } catch (error: any) {
       console.error("Save Error:", error);
-      displayToast(error.message || "Failed to save cover letter", "error");
+      const data = error.response?.data;
+      toast.error(data?.message || "Failed to save cover letter");
     } finally {
       setIsSaving(false);
     }
@@ -155,12 +161,6 @@ export default function CoverLetterPage() {
 
   return (
     <div className="min-h-screen flex flex-col h-screen overflow-hidden bg-background">
-      <Toast
-        message={toastMessage}
-        isVisible={showToast}
-        onClose={hideToast}
-        type={toastType}
-      />
 
       {/* Top Bar */}
       <header className="h-16 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-6 shrink-0 z-50">
@@ -228,11 +228,44 @@ export default function CoverLetterPage() {
         )}
       </header>
 
-      <PremiumUnlockDialog
-        open={showUnlock && !isPremium}
-        onClose={() => { }}
-        onUnlock={handleUnlock}
-      />
+      {!isPremium && (
+        <div className="absolute inset-0 z-[60] flex items-center justify-center p-6 bg-background/60 backdrop-blur-md">
+          <div className="max-w-md w-full bg-[#0f111a] border border-indigo-500/20 rounded-[2rem] p-8 text-center shadow-2xl">
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/30 transform rotate-3">
+              <Sparkles className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">AI Cover Letter Generator</h2>
+            <p className="text-indigo-200/70 mb-8 leading-relaxed">
+              Generate personalized cover letters for any job in seconds.
+            </p>
+            <div className="space-y-3 mb-8 text-left">
+              {[
+                "10 AI-generated cover letters",
+                "Download as PDF",
+                "Tailored for job descriptions"
+              ].map((f) => (
+                <div key={f} className="flex items-center gap-3 text-sm text-gray-300">
+                  <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+                    <Check className="h-3 w-3" />
+                  </div>
+                  {f}
+                </div>
+              ))}
+            </div>
+            <div className="space-y-3">
+              <Button onClick={handleUnlock} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+                Unlock Premium
+              </Button>
+              <Button onClick={() => {
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://quickcv.app`, '_blank');
+                handleUnlock();
+              }} variant="outline" className="w-full h-12 border-white/10 text-white font-bold">
+                Share on LinkedIn to Unlock
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         className={cn(

@@ -136,6 +136,35 @@
   }
 }
 
+/* scrollbar design for website */
+/* ===== Custom Scrollbar (Global) ===== */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f111a; /* dark background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #580c8a, #8849cf); /* teal → cyan */
+  border-radius: 10px;
+  border: 2px solid #0f111a; /* gives padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #602e95, #9749cf);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9e49cf #0f111a;
+}
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -616,8 +645,3 @@
     background: rgba(255, 255, 255, 0.2);
   }
 }
-
-/* .html2canvas-fix {
-  --background: #ffffff;
-  --primary: #3b82f6; /* Use HEX instead of lab/oklch 
-} */

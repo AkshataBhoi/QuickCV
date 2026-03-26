@@ -9,6 +9,9 @@ import React, {
 } from "react";
 import { TemplateId } from "@/components/builder/TemplateSelector";
 import { useAuth } from "@/context/AuthContext";
+import apiClient from "@/lib/api/client";
+
+import { toast } from "sonner";
 
 export interface UserProfile {
   id: string;
@@ -20,6 +23,8 @@ export interface UserProfile {
   avatarUrl?: string;
   preferredTemplate: TemplateId;
   accountType: "free" | "premium";
+  coverLetterCredits: number;
+  resumeDownloadCredits: number;
 }
 
 interface UserContextType {
@@ -28,6 +33,7 @@ interface UserContextType {
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
   isLoading: boolean;
+  toast: (message: string, type?: "success" | "error" | "info", className?: string) => void;
 }
 
 const DEFAULT_USER: UserProfile = {
@@ -39,6 +45,8 @@ const DEFAULT_USER: UserProfile = {
   location: "",
   preferredTemplate: "clean",
   accountType: "free",
+  coverLetterCredits: 0,
+  resumeDownloadCredits: 1,
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -48,8 +56,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const mapProfile = useCallback((profile: any): UserProfile => ({
     id: profile._id || firebaseUser?.uid || "",
@@ -61,27 +67,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     avatarUrl: profile.avatarUrl || "",
     preferredTemplate: (profile.preferredTemplate as TemplateId) || "clean",
     accountType: profile.plan === "premium" ? "premium" : "free",
+    coverLetterCredits: profile.coverLetterCredits || 0,
+    resumeDownloadCredits: profile.resumeDownloadCredits || 0,
   }), [firebaseUser]);
 
   const fetchProfile = useCallback(async () => {
     if (!firebaseUser) return;
-    console.log("UserProvider: Fetching profile for", firebaseUser.email || firebaseUser.uid);
-
+    
     try {
-      const token = await firebaseUser.getIdToken(true);
-      const response = await fetch(`${API_URL}/api/users/profile`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "x-user-id": firebaseUser.uid,
-          "Content-Type": "application/json",
-        },
-      });
-      
-      const data = await response.json();
-      console.log("UserProvider: GET Profile Response:", data);
+      const response = await apiClient.get('/api/users/profile');
+      const { data } = response;
 
-      if (response.ok && data.success && data.data) {
+      if (data.success && data.data) {
         setUser(mapProfile(data.data));
       }
     } catch (error) {
@@ -89,7 +86,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [firebaseUser, API_URL, mapProfile]);
+  }, [firebaseUser, mapProfile]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -110,43 +107,49 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!firebaseUser) return;
 
     try {
-      const token = await firebaseUser.getIdToken(true);
-      const response = await fetch(`${API_URL}/api/users/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "x-user-id": firebaseUser.uid,
-        },
-        body: JSON.stringify({
-          firstName: updates.firstName ?? user.firstName,
-          lastName: updates.lastName ?? user.lastName,
-          avatarUrl: updates.avatarUrl ?? user.avatarUrl,
-          location: updates.location ?? user.location,
-          phone: updates.phone ?? user.phone,
-          email: updates.email ?? user.email,
-        }),
+      const response = await apiClient.put('/api/users/profile', {
+        firstName: updates.firstName ?? user.firstName,
+        lastName: updates.lastName ?? user.lastName,
+        avatarUrl: updates.avatarUrl ?? user.avatarUrl,
+        location: updates.location ?? user.location,
+        phone: updates.phone ?? user.phone,
+        email: updates.email ?? user.email,
+        preferredTemplate: updates.preferredTemplate ?? user.preferredTemplate,
       });
 
-      const data = await response.json();
-      console.log("UserProvider: PUT Profile Response:", data);
+      const { data } = response;
 
-      if (!response.ok) {
-        console.error("Failed to update profile on backend");
-        fetchProfile(); // Fallback to re-sync
-      } else if (data.success && data.data) {
+      if (data.success && data.data) {
         // Use the returned data to update the context state immediately
         setUser(mapProfile(data.data));
+        toast.success("Profile updated successfully");
+      } else {
+        console.error("Failed to update profile on backend");
+        fetchProfile(); // Fallback to re-sync
       }
     } catch (error) {
       console.error("UserProvider: Failed to update profile:", error);
+      toast.error("Failed to update profile.");
       fetchProfile(); // Fallback to re-sync
     }
   };
 
+  const displayToast = useCallback((message: string, type: "success" | "error" | "info" = "success") => {
+    if (type === "success") toast.success(message);
+    else if (type === "error") toast.error(message);
+    else toast(message);
+  }, []);
+
   return (
     <UserContext.Provider
-      value={{ user, updateUser, settingsOpen, setSettingsOpen, isLoading }}
+      value={{
+        user,
+        updateUser,
+        settingsOpen,
+        setSettingsOpen,
+        isLoading: isLoading || authLoading,
+        toast: displayToast,
+      }}
     >
       {children}
     </UserContext.Provider>

@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, Star, Zap, Crown } from "lucide-react";
-
-interface PlanFeature {
-    text: string;
-    included: boolean;
-}
+import { motion } from "framer-motion";
+import { Check, Zap, Crown, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PricingPlan {
     name: string;
@@ -27,94 +23,87 @@ const plans: PricingPlan[] = [
         id: "free",
         monthlyPrice: 0,
         yearlyPrice: 0,
-        description: "Perfect for a quick start.",
+        description: "Explore the basics of QuickCV.",
         icon: Zap,
         features: [
-            "3 resume templates",
-        "Limited AI generations",
-        "PDF download",
-        "Watermark",
+            "4 Resume Templates",
+            "1 Resume Download",
+            "No Cover Letters",
+            "Premium Templates Locked"
         ],
         cta: "Get Started Free",
     },
     {
-        name: "Pro",
-        id: "pro",
-        monthlyPrice: 499,
-        yearlyPrice: 349,
-        description: "For serious job seekers.",
-        icon: Star,
-        popular: true,
-        features: [
-             "All resume templates",
-        "High AI limits",
-        "ATS-friendly resumes",
-        "PDF export",
-        "Resume analytics / scoring",
-        "Cover letter generator"
-        ],
-        cta: "Upgrade to Pro",
-    },
-    {
         name: "Premium",
         id: "premium",
-        monthlyPrice: 999,
-        yearlyPrice: 699,
-        description: "The complete career kit.",
+        monthlyPrice: 499,
+        yearlyPrice: 299,
+        description: "Everything you need to land the job.",
         icon: Crown,
+        popular: true,
         features: [
-            "Everything in Pro",
-        "DOCX export",
-        "Multiple resumes per account",
-        "Resume version history",
-        "Custom resume sections",
+            "10 Resume Templates",
+            "10 AI Cover Letters",
+            "7 Resume Downloads",
+            "Premium Templates Unlocked",
+            "No Watermarks",
+            "Priority Support"
         ],
-        cta: "Go Premium",
+        cta: "Unlock Premium",
     },
 ];
 
 export function Pricing() {
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+    const router = useRouter();
 
     return (
-        <section id="pricing" className="py-24 bg-background relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="text-center mb-16">
+        <section id="pricing" className="py-10 relative overflow-hidden">
+            {/* Background Decor */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-6xl pointer-events-none">
+                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full" />
+                <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/10 blur-[120px] rounded-full" />
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8 relative z-10">
+                <div className="text-center mb-12">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
                     >
-                        <h2 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                            Simple, Transparent Pricing
+                        <div className="inline-flex items-center gap-2 px-3 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-6">
+                            <Sparkles size={10} className="text-indigo-400" /> Investment in your future
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter italic italic-shadow text-white">
+                            Simple, <span className="text-indigo-500">Transparent</span> Pricing.
                         </h2>
-                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+                        <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-7 font-medium">
                             Choose the plan that fits your career goals. No hidden fees.
                         </p>
                     </motion.div>
 
                     {/* Billing Toggle */}
-                    <div className="flex items-center justify-center gap-4">
-                        <span className={`text-sm font-medium ${billingCycle === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
+                    <div className="flex items-center justify-center gap-6">
+                        <span className={`text-xs font-black uppercase tracking-widest ${billingCycle === "monthly" ? "text-white" : "text-gray-500"}`}>Monthly</span>
                         <button
                             onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-                            className="relative w-14 h-7 rounded-full bg-muted border border-border p-1 flex items-center transition-colors cursor-pointer"
+                            className="relative w-16 h-8 rounded-full bg-white/5 border border-white/10 p-1 flex items-center transition-all cursor-pointer hover:border-white/20"
                         >
                             <motion.div
-                                animate={{ x: billingCycle === "monthly" ? 0 : 28 }}
-                                className="w-5 h-5 rounded-full bg-primary shadow-lg"
+                                animate={{ x: billingCycle === "monthly" ? 0 : 32 }}
+                                className="w-6 h-6 rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)]"
                                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
                             />
                         </button>
-                        <span className={`text-sm font-medium ${billingCycle === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>Yearly</span>
-                        <span className="px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-bold text-primary animate-pulse">
-                            SAVE UP TO 30%
-                        </span>
+                        <span className={`text-xs font-black uppercase tracking-widest ${billingCycle === "yearly" ? "text-white" : "text-gray-500"}`}>Yearly</span>
+                        <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-400 uppercase tracking-tighter">
+                            Save 30%
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     {plans.map((plan, idx) => (
                         <motion.div
                             key={plan.id}
@@ -122,74 +111,91 @@ export function Pricing() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: idx * 0.1 }}
-                            whileHover={{ y: -10 }}
-                            className={`group relative flex flex-col p-8 rounded-[2rem] bg-card/50 border border-border/50 backdrop-blur-md transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_30px_-10px_rgba(var(--primary),0.2)] ${plan.popular ? "ring-2 ring-primary ring-offset-4 ring-offset-background" : ""
-                                }`}
+                            whileHover={{ y: -5 }}
+                            className={`group relative flex flex-col p-10 rounded-[2.5rem] transition-all duration-500 ${
+                                plan.popular 
+                                ? "bg-white/[0.03] border border-indigo-500/30 shadow-[0_20px_40px_-15px_rgba(79,70,229,0.15)] scale-100 z-20" 
+                                : "bg-white/[0.02] border border-white/5 hover:border-white/10 z-10"
+                            }`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[11px] font-black px-4 py-1.5 rounded-full shadow-xl tracking-wider uppercase">
-                                    Most Popular
-                                </div>
+                                <>
+                                    <div className="absolute inset-0 rounded-[2.5rem] bg-indigo-500/5 blur-2xl -z-10 group-hover:bg-indigo-500/10 transition-colors" />
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-[10px] font-black px-6 py-2 rounded-full shadow-2xl tracking-widest uppercase italic">
+                                        Most Popular
+                                    </div>
+                                </>
                             )}
 
-                            <div className="mb-8">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className={`p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300`}>
-                                        <plan.icon size={20} />
+                            <div className="mb-10">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className={`p-3 rounded-2xl ${plan.popular ? "bg-indigo-500 text-white" : "bg-white/5 text-gray-400"} shadow-xl`}>
+                                        <plan.icon size={22} />
                                     </div>
-                                    <h3 className="text-xl font-bold">{plan.name}</h3>
+                                    <h3 className="text-2xl font-black italic">{plan.name}</h3>
                                 </div>
-                                <div className="flex items-baseline gap-1 mb-2">
-                                    <span className="text-4xl font-black">
+                                <div className="flex items-baseline gap-2 mb-3">
+                                    <span className="text-6xl font-black italic tracking-tighter">
                                         ₹{billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
                                     </span>
-                                    <span className="text-muted-foreground font-medium">/mo</span>
+                                    <span className="text-gray-500 font-bold uppercase tracking-widest text-xs">/ month</span>
                                 </div>
-                                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                                <p className="text-sm text-gray-400 font-medium leading-relaxed">{plan.description}</p>
                             </div>
 
-                            <div className="h-px bg-border/50 w-full mb-8" />
+                            <div className="h-px bg-white/5 w-full mb-10" />
 
-                            <ul className="space-y-4 mb-8 flex-grow">
+                            <ul className="space-y-5 mb-12 flex-grow">
                                 {plan.features.map((feature, fIdx) => (
-                                    <li key={fIdx} className="flex items-start gap-3 text-sm text-foreground/80">
-                                        <div className="mt-0.5 shrink-0 text-primary">
-                                            <Check size={16} strokeWidth={3} />
+                                    <li key={fIdx} className="flex items-center gap-4 text-sm font-bold text-gray-300 group/item">
+                                        <div className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
+                                            plan.popular 
+                                            ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-400 group-hover/item:scale-110" 
+                                            : "bg-white/5 border-white/10 text-gray-500"
+                                        }`}>
+                                            <Check size={10} strokeWidth={4} />
                                         </div>
                                         {feature}
                                     </li>
                                 ))}
                             </ul>
 
-                            <button className={`relative w-full py-4 rounded-xl font-bold text-sm overflow-hidden group/btn transition-all duration-300 active:scale-95 ${plan.popular
-                                    ? "bg-primary text-primary-foreground hover:shadow-[0_0_20px_rgba(var(--primary),0.4)]"
-                                    : "bg-muted text-foreground border border-border hover:bg-muted/80"
-                                }`}>
-                                <span className="relative z-10 transition-colors duration-300 group-hover/btn:scale-105 inline-block">
+                            <button 
+                                onClick={() => router.push("/login")}
+                                className={`relative w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] overflow-hidden group/btn transition-all duration-300 active:scale-95 shadow-2xl ${
+                                    plan.popular
+                                    ? "bg-white text-indigo-950 hover:bg-gray-100 shadow-indigo-500/10"
+                                    : "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+                                }`}
+                            >
+                                <span className="relative z-10 inline-block group-hover/btn:scale-105 transition-transform duration-300">
                                     {plan.cta}
                                 </span>
                                 {plan.popular && (
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/btn:animate-shimmer" />
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-full group-hover/btn:animate-shimmer" />
                                 )}
                             </button>
                         </motion.div>
                     ))}
                 </div>
 
-                <motion.p
+                {/* <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.5 }}
-                    className="text-center mt-12 text-sm text-muted-foreground font-medium"
+                    className="flex flex-col md:flex-row items-center justify-center gap-8 mt-20"
                 >
-                    No credit card required to start • Secure payment processing
-                </motion.p>
+                    <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner">
+                        <Zap size={16} className="text-amber-400" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">No credit card required to start</span>
+                    </div>
+                    <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner">
+                        <Sparkles size={16} className="text-indigo-400" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Secure 256-bit SSL processing</span>
+                    </div>
+                </motion.div> */}
             </div>
-
-            {/* Background Glows */}
-            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
-            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
         </section>
     );
 }

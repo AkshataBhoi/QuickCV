@@ -5,8 +5,8 @@ import { useDropzone } from "react-dropzone";
 import { Upload, FileText, Sparkles, CheckCircle2, AlertTriangle, Loader2, Save, ArrowRight, Target, Zap, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-import { Toast } from "@/components/ui/toast";
+import { toast } from "sonner";
+import apiClient from "@/lib/api/client";
 import { useUser } from "@/components/providers/user-provider";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -31,7 +31,6 @@ type ATSResult = {
 export default function ResumeUploadPage() {
     const { user } = useUser();
     const { addFile, setActiveFile } = useDashboardFile();
-    const { showToast, toastMessage, toastType, displayToast, hideToast } = useToast();
     const router = useRouter();
 
     const [file, setFile] = useState<File | null>(null);
@@ -44,8 +43,6 @@ export default function ResumeUploadPage() {
 
     const debouncedJD = useDebounce(jobDescription, 800);
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
     // Trigger ATS scan when text or JD changes
     const runATSScan = useCallback(async (text: string, jd: string, existingId: string | null) => {
         if (!text) return;
@@ -53,37 +50,30 @@ export default function ResumeUploadPage() {
         try {
             // Create a minimal content object for the analyzer
             const content = {
-                summary: text.slice(0, 500), // Very rough, the analyzer usually expects a structured object
-                experience: [], // In a real app, we'd parse this into structure first
+                summary: text.slice(0, 500), 
+                experience: [], 
                 education: [],
                 skills: [],
                 rawText: text
             };
 
-            const response = await fetch(`${API_URL}/api/ai/resume/analyze-ats`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId: user?.id,
-                    resumeId: existingId || "resume-draft",
-                    content,
-                    jobDescription: jd,
-                }),
+            const response = await apiClient.post('/api/ai/resume/analyze-ats', {
+                userId: user?.id,
+                resumeId: existingId || "resume-draft",
+                content,
+                jobDescription: jd,
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data?.message || "Scan failed");
 
+            const { data } = response;
             setResult(data.analysis as ATSResult);
-
-            // If we don't have a resumeId yet, let's "save" this as a draft if possible
-            // This is a simplified flow
         } catch (error: any) {
             console.error("ATS Scan Error:", error);
-            displayToast(error.message || "Failed to analyze resume", "error");
+            const data = error.response?.data;
+            toast.error(data?.message || "Failed to analyze resume");
         } finally {
             setAnalyzing(false);
         }
-    }, [user?.id, API_URL, displayToast]);
+    }, [user?.id, displayToast]);
 
     // Handle file drop/selection
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -99,30 +89,26 @@ export default function ResumeUploadPage() {
         formData.append("resume", selectedFile);
 
         try {
-            const response = await fetch(`${API_URL}/api/files/upload`, {
-                method: "POST",
-                body: formData,
+            const response = await apiClient.post('/api/files/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data?.message || "Upload failed");
 
-            const text = data.data.text;
+            const text = response.data.data.text;
             setExtractedText(text);
             setParsing(false);
 
             // Successfully parsed, now auto-save and scan
-            const saveResponse = await fetch(`${API_URL}/api/resume`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    title: selectedFile.name.replace(/\.[^/.]+$/, ""),
-                    content: { rawText: text },
-                    templateId: "modern",
-                    type: "resume"
-                }),
+            const saveResponse = await apiClient.post('/api/resume', {
+                title: selectedFile.name.replace(/\.[^/.]+$/, ""),
+                content: { rawText: text },
+                templateId: "modern",
+                type: "resume"
             });
-            const saveData = await saveResponse.json();
-            if (saveResponse.ok && saveData.data?._id) {
+
+            const saveData = saveResponse.data;
+            if (saveData.data?._id) {
                 setResumeId(saveData.data._id);
                 addFile(saveData.data);
                 // Trigger initial scan
@@ -132,13 +118,14 @@ export default function ResumeUploadPage() {
                 runATSScan(text, jobDescription, null);
             }
 
-            displayToast("File saved successfully ✓", "success");
+            toast.success("File saved successfully ✓");
         } catch (error: any) {
             console.error("Upload Error:", error);
-            displayToast(error.message || "Failed to upload and parse", "error");
+            const data = error.response?.data;
+            toast.error(data?.message || "Failed to upload and parse");
             setParsing(false);
         }
-    }, [API_URL, displayToast, jobDescription, addFile, runATSScan]);
+    }, [jobDescription, addFile, runATSScan]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -166,7 +153,6 @@ export default function ResumeUploadPage() {
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in-up pb-20">
-            <Toast message={toastMessage} isVisible={showToast} onClose={hideToast} type={toastType} />
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">

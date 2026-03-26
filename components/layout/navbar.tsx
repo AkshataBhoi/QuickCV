@@ -60,7 +60,7 @@ export function Navbar() {
                     <Button
                         variant="ghost"
                         onClick={openModal}
-                        className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 border-indigo-500 hover:text-indigo-600 hover:bg-gray-50 transition-all duration-300"
+                        className="px-3 py-2 rounded-xl text-sm font-semibold text-gray-600 border-indigo-500 hover:text-indigo-600 hover:bg-indigo-100 transition-all duration-300"
                     >
                         Login
                     </Button>
@@ -116,7 +116,7 @@ export function Navbar() {
                                         setIsMobileMenuOpen(false);
                                         openModal();
                                     }}
-                                    className="text-lg font-medium text-gray-600 hover:text-indigo-600 justify-start h-auto p-0"
+                                    className="text-lg font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-100 hover:border border-indigo-500 justify-start h-auto p-2"
                                 >
                                     Login
                                 </Button>
@@ -125,7 +125,7 @@ export function Navbar() {
                                         setIsMobileMenuOpen(false);
                                         openModal();
                                     }}
-                                    className="w-full bg-indigo-600 text-white rounded-xl py-6 text-lg font-bold"
+                                    className="w-full bg-indigo-600 hover:bg-gray-200 hover:border border-indigo-500 hover:text-indigo-600 text-white rounded-xl py-6 text-lg font-bold"
                                 >
                                     Get Started
                                 </Button>

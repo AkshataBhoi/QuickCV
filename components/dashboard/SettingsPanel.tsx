@@ -24,7 +24,7 @@ import {
   Layout,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { TemplateSelector } from "@/components/builder/TemplateSelector";
 import { cn } from "@/lib/utils";
 import { useRef } from "react";
@@ -32,7 +32,6 @@ import { useRef } from "react";
 export const SettingsPanel = () => {
   const { user, updateUser, settingsOpen, setSettingsOpen } = useUser();
   const [formData, setFormData] = useState<UserProfile>(user);
-  const { displayToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resizeImage = (base64Str: string, maxWidth = 200, maxHeight = 200): Promise<string> => {
@@ -95,10 +94,15 @@ export const SettingsPanel = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    updateUser(formData);
-    displayToast("Settings saved successfully!", "success");
-    setSettingsOpen(false);
+  const handleSave = async () => {
+    try {
+      await updateUser(formData);
+      toast.success("Settings saved successfully!");
+      setSettingsOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save settings.");
+    }
   };
 
   if (!settingsOpen) return null;

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { ResumePreview } from "@/components/builder/ResumePreview";
 import { CoverLetterPreview } from "@/components/builder/CoverLetterPreview";
+import apiClient from "@/lib/api/client";
 
 function PrintContent() {
   const searchParams = useSearchParams();
@@ -15,16 +16,17 @@ function PrintContent() {
   useEffect(() => {
     const fetchById = async (id: string) => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/resume/${id}/print`);
-        const result = await response.json();
-        if (response.ok && result.data) {
+        const response = await apiClient.get(`/api/resume/${id}/print`);
+        const result = response.data;
+        if (result.data) {
           setData(result.data.content);
           setType("resume");
           setTemplate(result.data.templateId || "clean");
         } else {
           setError(result.message || "Failed to load document.");
         }
-      } catch (e) {
+      } catch (e: any) {
+        console.error("Print fetch error:", e);
         setError("Network error. Please try again.");
       }
     };

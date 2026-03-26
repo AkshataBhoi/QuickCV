@@ -9,14 +9,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-interface TableRowActionsProps {
+export interface TableRowActionsProps {
     onView?: () => void;
     onEdit?: () => void;
     onDownload?: () => void;
     onDelete?: () => void;
+    isViewDisabled?: boolean;
+    isEditDisabled?: boolean;
 }
 
-export function TableRowActions({ onView, onEdit, onDownload, onDelete }: TableRowActionsProps) {
+export function TableRowActions({ onView, onEdit, onDownload, onDelete, isViewDisabled, isEditDisabled }: TableRowActionsProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -26,12 +28,20 @@ export function TableRowActions({ onView, onEdit, onDownload, onDelete }: TableR
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[160px] bg-[#0f111a] backdrop-blur-xl border-white/10 text-white">
                 {onView && (
-                    <DropdownMenuItem onClick={onView}>
+                    <DropdownMenuItem 
+                        onClick={onView} 
+                        disabled={isViewDisabled}
+                        className={isViewDisabled ? "opacity-50 cursor-not-allowed" : ""}
+                    >
                         <Eye className="mr-2 h-4 w-4" /> View
                     </DropdownMenuItem>
                 )}
                 {onEdit && (
-                    <DropdownMenuItem onClick={onEdit}>
+                    <DropdownMenuItem 
+                        onClick={onEdit}
+                        disabled={isEditDisabled}
+                        className={isEditDisabled ? "opacity-50 cursor-not-allowed" : ""}
+                    >
                         <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
                 )}

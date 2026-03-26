@@ -12,34 +12,23 @@ import { ATSScorePie } from "@/components/dashboard/ATSScorePie";
 import { MyResumes } from "@/components/dashboard/MyResumes";
 import { useAuth } from "@/context/AuthContext";
 import useSWR from "swr";
+import apiClient from "@/lib/api/client";
 
-const fetcher = async ([url, token, uid]: [string, string?, string?]) => {
-    const headers: Record<string, string> = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    if (uid) headers["x-user-id"] = uid;
-
-    const res = await fetch(url, { headers });
-    if (!res.ok) throw new Error("Failed to fetch data");
-    return res.json();
+const fetcher = async (url: string) => {
+    const res = await apiClient.get(url);
+    return res.data;
 };
 
 
 export default function DashboardPage() {
     const { user } = useAuth();
     const { activeFile, files, isLoading: providerLoading } = useDashboardFile();
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-    const fetcherKey = activeFile?.id && user?.uid ? [
-        `${API_URL}/api/ats/report/${activeFile.id}/latest`,
-        user?.uid
-    ] : null;
+    const fetcherKey = activeFile?.id ? `/api/ats/report/${activeFile.id}/latest` : null;
 
     const { data: reportData, isLoading: reportLoading } = useSWR(
         fetcherKey,
-        async ([url, uid]) => {
-            const token = await user?.getIdToken();
-            return fetcher([url, token, uid]);
-        }
+        fetcher
     );
 
     const report = reportData?.data;
@@ -73,7 +62,7 @@ export default function DashboardPage() {
             <div className="fixed top-20 left-10 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full pointer-events-none opacity-20 mix-blend-screen" />
             <div className="fixed bottom-20 right-10 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full pointer-events-none opacity-20 mix-blend-screen" />
 
-            <div className="h-full w-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-12 pb-20 px-4 sm:px-6 pt-6">
+            <div className="h-full w-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-8 px-4 sm:px-6 pt-6  ">
                 {/* Floating Control Bar */}
                 <div className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border border-white/10 p-3 rounded-2xl flex flex-col md:flex-row items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] gap-4 mx-auto max-w-7xl">
                     <FileSwitcher />
@@ -96,26 +85,10 @@ export default function DashboardPage() {
                 </div>
 
                 {!activeFile && files.length === 0 ? (
-                    // <div className="max-w-7xl mx-auto py-20 text-center space-y-6">
-                    //     <div className="p-6 rounded-full bg-white/5 w-24 h-24 mx-auto flex items-center justify-center">
-                    //         <FileText className="h-12 w-12 text-muted-foreground" />
-                    //     </div>
-                    //     <div className="space-y-2">
-                    //         <h2 className="text-2xl font-bold text-white">No Resumes Found</h2>
-                    //         <p className="text-muted-foreground max-w-md mx-auto">
-                    //             Create your first resume or upload an existing one to see analysis and insights here.
-                    //         </p>
-                    //     </div>
-                    //     <Link href="/dashboard/resume-builder">
-                    //         <Button size="lg" className="bg-primary hover:bg-primary/90">
-                    //             <Plus className="mr-2 h-5 w-5" /> Start Building
-                    //         </Button>
-                    //     </Link>
-                    // </div>
                     <MyResumes />
 
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Left Column: Metrics & Score (8 cols) */}
                         <div className="lg:col-span-8 space-y-6">
                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -228,16 +201,23 @@ export default function DashboardPage() {
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-black/40 backdrop-blur-xl relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/30 blur-[50px] rounded-full pointer-events-none group-hover:bg-indigo-500/50 transition-colors" />
+                            <div className="p-6 rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-black/40 backdrop-blur-xl relative overflow-hidden group shadow-2xl shadow-indigo-500/10">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/30 blur-[50px] rounded-full pointer-events-none group-hover:bg-indigo-500/50 transition-colors animate-pulse" />
                                 <div className="relative z-10">
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/30">
-                                        <Sparkles className="h-5 w-5 text-white" />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                                            <Sparkles className="h-5 w-5 text-white" />
+                                        </div>
+                                        <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-bold text-white uppercase tracking-widest backdrop-blur-md">
+                                            Unlock all features
+                                        </span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-white mb-2">Pro Analysis</h3>
-                                    <p className="text-sm text-indigo-200/80 mb-6 leading-relaxed">Unlock deep insights for detailed resume scoring and AI suggestions.</p>
+                                    <h3 className="text-xl font-bold text-white mb-2">Upgrade to Pro</h3>
+                                    <p className="text-sm text-indigo-200/80 mb-6 leading-relaxed">
+                                        Get unlimited resume downloads, advanced ATS scoring, and premium AI suggestions.
+                                    </p>
                                     <Link href="/payment">
-                                        <Button className="w-full bg-white text-indigo-950 hover:bg-white/90 font-semibold border-0 shadow-xl">
+                                        <Button className="w-full bg-white text-indigo-950 hover:bg-white/90 font-bold border-0 shadow-xl transition-all active:scale-[0.98]">
                                             Upgrade Plan
                                         </Button>
                                     </Link>
@@ -247,9 +227,6 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-                <div className="max-w-7xl mx-auto relative z-10">
-                    {/* <MyResumes /> */}
-                </div>
             </div>
         </div>
     );

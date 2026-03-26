@@ -49,7 +49,7 @@ export const ModernProfessional = ({ data }: TemplateProps) => {
                         </div>
                     </div>
 
-                    {data.skills.length > 0 && (
+                    {data?.skills?.length > 0 && (
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3 border-b border-blue-400/30 pb-1">
                                 Expertise
@@ -67,7 +67,7 @@ export const ModernProfessional = ({ data }: TemplateProps) => {
                         </div>
                     )}
 
-                    {data.education && data.education.length > 0 && (
+                    {data.education && data?.education?.length > 0 && (
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3 border-b border-blue-400/30 pb-1">
                                 Education
@@ -84,7 +84,7 @@ export const ModernProfessional = ({ data }: TemplateProps) => {
                         </div>
                     )}
 
-                    {data.languages && data.languages.length > 0 && (
+                    {data.languages && data?.languages?.length > 0 && (
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3 border-b border-blue-400/30 pb-1">
                                 Languages
@@ -115,7 +115,7 @@ export const ModernProfessional = ({ data }: TemplateProps) => {
                     </div>
                 )}
 
-                {data.experience && data.experience.length > 0 && (
+                {data.experience && data?.experience?.length > 0 && (
                     <div className="mb-8">
                         <h2 className="text-xl font-bold text-slate-800 mb-6 uppercase tracking-tight flex items-center gap-2">
                             <span className="w-8 h-1 bg-blue-500 block"></span> Experience
@@ -142,7 +142,7 @@ export const ModernProfessional = ({ data }: TemplateProps) => {
                     </div>
                 )}
 
-                {data.certifications && data.certifications.length > 0 && (
+                {data.certifications && data?.certifications?.length > 0 && (
                     <div>
                         <h2 className="text-xl font-bold text-slate-800 mb-6 uppercase tracking-tight flex items-center gap-2">
                             <span className="w-8 h-1 bg-blue-500 block"></span> Certifications
@@ -165,7 +165,7 @@ export const ModernProfessional = ({ data }: TemplateProps) => {
                     </div>
                 )}
 
-                {data.projects && data.projects.length > 0 && (
+                {data.projects && data?.projects?.length > 0 && (
                     <div className="mt-8">
                         <h2 className="text-xl font-bold text-slate-800 mb-4 uppercase tracking-tight flex items-center gap-2">
                             <span className="w-8 h-1 bg-blue-500 block"></span> Projects

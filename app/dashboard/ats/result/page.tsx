@@ -19,19 +19,16 @@ import { Button } from "@/components/ui/button";
 import { SpeedometerMini } from "@/components/dashboard/SpeedometerMini";
 import { MetricCardSmall } from "@/components/dashboard/MetricCardSmall";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/toast";
-import { Toast } from "@/components/ui/toast";
+import { toast } from "sonner";
+import apiClient from "@/lib/api/client";
 
 function ATSResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { showToast, toastMessage, toastType, displayToast, hideToast } = useToast();
   
   const resumeId = searchParams.get("resumeId");
   const [report, setReport] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!resumeId) {
@@ -41,23 +38,24 @@ function ATSResultContent() {
 
     const fetchReport = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/ats/report/${resumeId}/latest`);
-        const data = await response.json();
-        if (response.ok) {
+        const response = await apiClient.get(`/api/ats/report/${resumeId}/latest`);
+        const data = response.data;
+        if (data.data) {
           setReport(data.data);
         } else {
-          displayToast(data.message || "Failed to fetch analysis results.", "error");
+          toast.error(data.message || "Failed to fetch analysis results.");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Fetch report error:", error);
-        displayToast("An error occurred while fetching the report.", "error");
+        const data = error.response?.data;
+        toast.error(data?.message || "An error occurred while fetching the report.");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchReport();
-  }, [resumeId, API_URL, router, displayToast]);
+  }, [resumeId, router]);
 
   if (isLoading) {
     return (
@@ -104,7 +102,6 @@ function ATSResultContent() {
       animate="show"
       className="max-w-6xl mx-auto px-4 py-8 space-y-8 bg-black/20"
     >
-      <Toast message={toastMessage} isVisible={showToast} onClose={hideToast} type={toastType} />
 
       {/* Top Section - Merged Header and Score */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-8 bg-gray-900/40 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-sm">

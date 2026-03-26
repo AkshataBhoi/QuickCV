@@ -38,6 +38,7 @@ export const uploadResumeForATS = async (req, res) => {
       title: req.file.originalname,
       content: { rawText: extractedText },
       type: "resume",
+      source: "uploaded",
       isDraft: false,
       status: "ATS_SCAN",
     });

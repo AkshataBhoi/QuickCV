@@ -43,6 +43,7 @@ export const saveResume = async (req, res) => {
                 templateId: templateId || "clean",
                 jobDescription: jobDescription || "",
                 type: type || "resume",
+                source: "generated",
                 isDraft: false
             });
         }

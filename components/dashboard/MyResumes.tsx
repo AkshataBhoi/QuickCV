@@ -5,10 +5,14 @@ import { cn } from "@/lib/utils";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { FileCard } from "@/components/shared/FileCard";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { FilePreviewDialog } from "@/components/shared/FilePreviewDialog";
 
 export function MyResumes() {
   const { files, isLoading, deleteFile, setActiveFile } = useDashboardFile();
   const router = useRouter();
+  const [selectedFile, setSelectedFile] = useState<any | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // Only show resumes here
   const resumes = files.filter(f => f.type === "Resume");
@@ -25,6 +29,11 @@ export function MyResumes() {
 
   const handleDownload = (id: string) => {
     window.open(`/print/resume?id=${id}`, '_blank');
+  };
+
+  const handleView = (file: any) => {
+    setSelectedFile(file);
+    setPreviewOpen(true);
   };
 
   return (
@@ -67,6 +76,7 @@ export function MyResumes() {
               <FileCard
                 key={resume.id}
                 file={resume}
+                onView={() => handleView(resume)}
                 onEdit={() => handleEdit(resume.id)}
                 onDelete={() => handleDelete(resume.id)}
                 onDownload={() => handleDownload(resume.id)}
@@ -91,6 +101,12 @@ export function MyResumes() {
           </>
         )}
       </div>
+
+      <FilePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        file={selectedFile}
+      />
     </section>
   );
 }

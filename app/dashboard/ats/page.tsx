@@ -4,10 +4,10 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UploadCard } from "./components/UploadCard";
 import { JobDescriptionModal } from "./components/JobDescriptionModal";
-import { useToast } from "@/components/ui/toast";
-import { Toast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { useAuth } from "@/context/AuthContext";
+import apiClient from "@/lib/api/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -28,8 +28,6 @@ function ATSViewContent() {
   const { addFile } = useDashboardFile();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { showToast, toastMessage, toastType, displayToast, hideToast } = useToast();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   // State for upload
   const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
@@ -53,21 +51,17 @@ function ATSViewContent() {
   const fetchReport = async (rid: string) => {
     setIsLoadingReport(true);
     try {
-      const token = await user?.getIdToken();
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (user?.uid) headers["x-user-id"] = user.uid;
-
-      const response = await fetch(`${API_URL}/api/ats/report/${rid}/latest`, { headers });
-      const data = await response.json();
-      if (response.ok) {
+      const response = await apiClient.get(`/api/ats/report/${rid}/latest`);
+      const data = response.data;
+      if (data.data) {
         setReport(data.data);
       } else {
-        displayToast(data.message || "Failed to fetch analysis results.", "error");
+        toast.error(data.message || "Failed to fetch analysis results.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch report error:", error);
-      displayToast("An error occurred while fetching the report.", "error");
+      const data = error.response?.data;
+      toast.error(data?.message || "An error occurred while fetching the report.");
     } finally {
       setIsLoadingReport(false);
     }
@@ -91,25 +85,20 @@ function ATSViewContent() {
     formData.append("resume", file);
 
     try {
-      const token = await user?.getIdToken();
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (user?.uid) headers["x-user-id"] = user.uid;
-
-      const response = await fetch(`${API_URL}/api/ats/upload`, {
-        method: "POST",
-        headers,
-        body: formData,
+      const response = await apiClient.post('/api/ats/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
-      const data = await response.json();
+      const data = response.data;
       clearInterval(interval);
       setProgress(100);
 
-      if (response.ok) {
+      if (data.data || data.resumeId) {
         const newResumeId = data.data?.resumeId || data.resumeId;
         if (!newResumeId) {
-          displayToast("Invalid resume ID from server.", "error");
+          toast.error("Invalid resume ID from server.");
           setStatus("error");
           return;
         }
@@ -119,53 +108,46 @@ function ATSViewContent() {
         }
         setStatus("success");
         setIsJobModalOpen(true);
-        displayToast("File saved successfully ✓", "success");
+        toast.success("File saved successfully ✓");
       } else {
         setStatus("error");
-        displayToast(data.message || "Upload failed. Please try again.", "error");
+        toast.error(data.message || "Upload failed. Please try again.");
       }
-    } catch (error) {
+    } catch (error: any) {
       clearInterval(interval);
       setStatus("error");
       console.error("Upload error:", error);
-      displayToast("An error occurred during upload.", "error");
+      const data = error.response?.data;
+      toast.error(data?.message || "An error occurred during upload.");
     }
   };
 
   const handleJDSubmit = async (jobDescription: string) => {
     if (!activeResumeId) {
-      displayToast("Resume ID missing.", "error");
+      toast.error("Resume ID missing.");
       return;
     }
 
     setIsAnalyzing(true);
     try {
-      const token = await user?.getIdToken();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (user?.uid) headers["x-user-id"] = user.uid;
-
-      const response = await fetch(`${API_URL}/api/ats/analyze`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          resumeId: activeResumeId,
-          jobDescription,
-          ownerId: user?.uid // Pass ownerId in body as well for backup
-        }),
+      const response = await apiClient.post('/api/ats/analyze', {
+        resumeId: activeResumeId,
+        jobDescription,
+        ownerId: user?.uid
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (data.data || response.status === 200) {
         setIsJobModalOpen(false);
         router.push(`/dashboard/ats?resumeId=${activeResumeId}`);
         fetchReport(activeResumeId);
       } else {
-        displayToast(data.message || "Analysis failed.", "error");
+        toast.error(data.message || "Analysis failed.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Analysis error:", error);
-      displayToast("An error occurred during analysis.", "error");
+      const data = error.response?.data;
+      toast.error(data?.message || "An error occurred during analysis.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -191,8 +173,7 @@ function ATSViewContent() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-100px)] w-full flex flex-col items-center justify-start px-4 py-8 bg-background relative overflow-hidden">
-      <Toast message={toastMessage} isVisible={showToast} onClose={hideToast} type={toastType} />
+    <div className="min-h-[calc(100vh-90px)] -mt-5 w-full flex flex-col items-center justify-start px-4 bg-background relative overflow-y-hidden no-scrollbar">
 
       {/* Background Decor */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />

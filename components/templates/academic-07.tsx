@@ -20,7 +20,7 @@ export const AcademicResearch = ({ data }: TemplateProps) => {
             </header>
 
             {/* Education First for Academic */}
-            {data.education && data.education.length > 0 && (
+            {data.education && data?.education?.length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase border-b border-black mb-3">Education</h2>
                     <div className="space-y-3">
@@ -38,7 +38,7 @@ export const AcademicResearch = ({ data }: TemplateProps) => {
             )}
 
             {/* Research / Experience */}
-            {data.experience && data.experience.length > 0 && (
+            {data.experience && data?.experience?.length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase border-b border-black mb-3">Professional & Research Experience</h2>
                     <div className="space-y-4">
@@ -57,7 +57,7 @@ export const AcademicResearch = ({ data }: TemplateProps) => {
             )}
 
             {/* Projects as Publications/Research */}
-            {data.projects && data.projects.length > 0 && (
+            {data.projects && data?.projects?.length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase border-b border-black mb-3">Key Projects</h2>
                     <ul className="list-disc pl-5 space-y-2 text-sm">
@@ -71,7 +71,7 @@ export const AcademicResearch = ({ data }: TemplateProps) => {
             )}
 
             {/* Skills */}
-            {data.skills.length > 0 && (
+            {data?.skills?.length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase border-b border-black mb-3">Skills</h2>
                     <p className="text-sm">{data.skills.join(", ")}</p>
@@ -79,7 +79,7 @@ export const AcademicResearch = ({ data }: TemplateProps) => {
             )}
 
             {/* Languages */}
-            {data.languages && data.languages.length > 0 && (
+            {data.languages && data?.languages?.length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase border-b border-black mb-3">Languages</h2>
                     <p className="text-sm">{data.languages.map(l => `${l.language} (${l.level})`).join("; ")}</p>

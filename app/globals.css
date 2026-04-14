@@ -150,19 +150,19 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #580c8a, #8849cf); /* teal → cyan */
+  background: linear-gradient(180deg, #0c498a, #494ecf); /* teal → cyan */
   border-radius: 10px;
   border: 2px solid #0f111a; /* gives padding effect */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #602e95, #9749cf);
+  background: linear-gradient(180deg, #2e5595, #5d49cf);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #9e49cf #0f111a;
+  scrollbar-color: #6449cf #0f111a;
 }
 
 /*

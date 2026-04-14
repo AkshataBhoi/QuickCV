@@ -49,26 +49,26 @@ export default function MyFilesPage() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in-up pb-10">
+        <div className="space-y-6 animate-fade-in-up pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">My Library</h1>
                     <p className="text-sm text-muted-foreground">Manage your generated documents.</p>
                 </div>
 
-                <div className="flex gap-2 w-full md:w-auto">
-                    <div className="relative flex-1 md:flex-none">
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:flex-none md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
-                            className="h-10 pl-9 pr-4 rounded-xl bg-white/5 border border-white/10 text-sm w-full md:w-64 focus:bg-white/10 transition-all outline-none focus:border-primary/50"
-                            placeholder="Search files..."
+                            className="h-10 pl-9 pr-4 rounded-xl bg-white/5 border border-white/10 text-sm w-full focus:bg-white/10 transition-all outline-none focus:border-primary/50"
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Link href="/dashboard/resume-builder">
+                    <Link href="/dashboard/resume-builder" className="shrink-0">
                         <Button size="sm" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] border-0">
-                        <Plus className="mr-2 h-4 w-4" />Create New</Button>
+                        <Plus className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Create New</span><span className="sm:hidden">New</span></Button>
                     </Link>
                 </div>
             </div>

@@ -57,28 +57,41 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="relative h-screen w-full overflow-hidden bg-background">
+        <div className="relative min-h-screen w-full bg-background overflow-x-hidden">
             {/* Ambient Background Elements */}
             <div className="fixed top-20 left-10 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full pointer-events-none opacity-20 mix-blend-screen" />
             <div className="fixed bottom-20 right-10 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full pointer-events-none opacity-20 mix-blend-screen" />
 
-            <div className="h-full w-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-8 px-4 sm:px-6 pt-6  ">
+            <div className="w-full space-y-8 px-4 sm:px-6 pt-6 pb-12 max-w-7xl mx-auto">
                 {/* Floating Control Bar */}
-                <div className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border border-white/10 p-3 rounded-2xl flex flex-col md:flex-row items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] gap-4 mx-auto max-w-7xl">
+                <div className="sticky top-4 z-40 bg-black/40 backdrop-blur-xl border border-white/10 p-3 rounded-2xl flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] gap-4">
                     <FileSwitcher />
 
-                    <div className="flex items-center gap-3">
-                        <div className="md:flex items-center gap-2 border-r border-white/10 pr-4 mr-2">
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 sm:border-r sm:border-white/10 sm:pr-4 sm:mr-2">
                             <Link href="/dashboard/ats">
-                                <Button variant="ghost" size="sm" className="hover:bg-white/5 text-muted-foreground hover:text-white">
-                                    <Upload className="mr-2 h-4 w-4" /> Upload Analysis
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="hover:bg-white/5 text-muted-foreground hover:text-white"
+                                    title="Upload Analysis"
+                                    aria-label="Upload Analysis"
+                                >
+                                    <Upload className="h-4 w-4" /> 
+                                    <span className="hidden sm:inline ml-2">Upload Analysis</span>
                                 </Button>
                             </Link>
                         </div>
 
                         <Link href="/dashboard/resume-builder">
-                            <Button size="sm" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] border-0">
-                                <Plus className="mr-2 h-4 w-4" /> New Resume
+                            <Button 
+                                size="sm" 
+                                className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] border-0"
+                                title="New Resume"
+                                aria-label="New Resume"
+                            >
+                                <Plus className="h-4 w-4" /> 
+                                <span className="hidden sm:inline ml-2">New Resume</span>
                             </Button>
                         </Link>
                     </div>

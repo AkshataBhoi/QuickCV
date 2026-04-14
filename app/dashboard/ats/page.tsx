@@ -173,7 +173,7 @@ function ATSViewContent() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-90px)] -mt-5 w-full flex flex-col items-center justify-start px-4 bg-background relative overflow-y-hidden no-scrollbar">
+    <div className="min-h-screen w-full flex flex-col items-center justify-start px-4 bg-background relative pb-20">
 
       {/* Background Decor */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
@@ -185,33 +185,66 @@ function ATSViewContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="max-w-4xl w-full space-y-12 relative z-10 pt-12"
+            className="max-w-4xl w-full space-y-8 relative z-10 pt-0 sm:pt-12"
           >
             <div className="text-center space-y-4">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-4"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2 sm:mb-4"
               >
                 <Sparkles size={16} />
                 <span className="text-xs font-black uppercase tracking-widest">Premium ATS Analysis</span>
               </motion.div>
 
-              <motion.h1 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.1]">
-                Boost Your Hire <span className="text-gradient">Visibility</span>
+              <motion.h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.1]">
+                Optimize for the <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                  Digital Gatekeepers
+                </span>
               </motion.h1>
-
-              <motion.p className="text-gray-400 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-                Our deep analysis engine scores your resume against specific job
-                requirements using the same patterns as modern ATS.
-              </motion.p>
+              <p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto font-medium">
+                Upload your resume and see exactly how ATS filters see your application. 
+                Get real-time feedback to beat the bots.
+              </p>
             </div>
 
-            <UploadCard
-              onFileSelect={handleFileSelect}
-              isUploading={status === "uploading"}
-              uploadProgress={progress}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              <UploadCard onFileSelect={handleFileSelect} status={status} progress={progress} />
+              
+              <div className="space-y-4">
+                <div className="p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm space-y-4">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <Target className="text-indigo-400 h-5 w-5" /> Why ATS Analysis?
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      "Identify missing critical keywords",
+                      "Check for formatting compatibility",
+                      "Compare against job descriptions",
+                      "Improve your overall match score"
+                    ].map((text, i) => (
+                      <div key={i} className="flex items-start gap-3 text-sm text-gray-300">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                        <span>{text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-3xl border border-indigo-500/20 bg-indigo-500/5 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm">Privacy Guaranteed</h4>
+                      <p className="text-xs text-indigo-400/60">Your data is encrypted and secure</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -293,20 +326,20 @@ function ATSViewContent() {
             {/* Actionable Recommendations & Keyword Optimization */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recommendations */}
-              <div className="bg-gray-900/50 border border-white/10 rounded-3xl p-8 space-y-6">
+              <div className="bg-gray-900/50 border border-white/10 rounded-3xl p-4 sm:p-8 space-y-6">
                 <div className="flex items-center gap-3">
                   <Sparkles className="text-indigo-400" size={20} />
-                  <h3 className="text-lg font-black text-white tracking-tight uppercase">Actionable Improvements</h3>
+                  <h3 className="text-sm sm:text-lg font-black text-white tracking-tight uppercase">Actionable Improvements</h3>
                 </div>
                 <div className="space-y-4">
                   {(report.improvements || report.suggestions)?.map((s: any, idx: number) => (
-                    <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-colors group">
+                    <div key={idx} className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-colors group">
                       <div className="mt-1">
                         <CheckCircle2 size={16} className="text-indigo-400 group-hover:scale-110 transition-transform" />
                       </div>
                       <div className="space-y-1">
-                        <h4 className="text-sm text-white font-bold leading-relaxed">{s.title || s.issue || s}</h4>
-                        <p className="text-xs text-gray-400 font-medium leading-relaxed">{s.description || s.suggestion}</p>
+                        <h4 className="text-xs sm:text-sm text-white font-bold leading-relaxed">{s.title || s.issue || s}</h4>
+                        <p className="text-[10px] sm:text-xs text-gray-400 font-medium leading-relaxed">{s.description || s.suggestion}</p>
                       </div>
                     </div>
                   ))}
@@ -314,13 +347,13 @@ function ATSViewContent() {
               </div>
 
               {/* Keyword Optimization */}
-              <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-3xl p-8 space-y-6">
+              <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-3xl p-4 sm:p-8 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Target className="text-indigo-400" size={20} />
-                    <h3 className="text-lg font-black text-white tracking-tight uppercase">Keyword Optimization</h3>
+                    <h3 className="text-sm sm:text-lg font-black text-white tracking-tight uppercase">Keyword Optimization</h3>
                   </div>
-                  <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+                  <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-[10px]">
                     Score: {report.keywordScore}%
                   </Badge>
                 </div>

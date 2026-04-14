@@ -27,6 +27,7 @@ import { useUser } from "@/components/providers/user-provider";
 import { useDashboardFile } from "@/components/providers/dashboard-file-provider";
 import { PremiumUnlockDialog } from "@/components/shared/PremiumUnlockDialog";
 import { SaveFileDialog } from "@/components/shared/SaveFileDialog";
+import { FilePreviewDialog } from "@/components/shared/FilePreviewDialog";
 import { ResumeData } from "@/lib/types";
 import { DEFAULT_RESUME_DATA } from "@/lib/defaultResumeData";
 const AISummaryModal = lazy(() =>
@@ -94,7 +95,7 @@ function ResumeBuilderPage() {
     location: user.location || "",
   }));
 
-  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [changeTemplateOpen, setChangeTemplateOpen] = useState(false);
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
@@ -354,6 +355,16 @@ function ResumeBuilderPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col h-screen overflow-hidden">
+      <FilePreviewDialog
+        open={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        file={{
+          name: resumeTitle,
+          type: "Resume",
+          data: { content: data },
+          template: template
+        }}
+      />
 
       {/* Top Bar */}
       <header className="h-16 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-4 md:px-6 shrink-0 z-50">
@@ -372,14 +383,14 @@ function ResumeBuilderPage() {
               type="text"
               value={resumeTitle}
               onChange={(e) => setResumeTitle(e.target.value)}
-              className="bg-transparent border-none text-sm font-semibold focus:ring-0 p-0 text-white w-40 md:w-auto"
+              className="bg-transparent border-none text-sm font-semibold focus:ring-0 p-0 text-white w-32 sm:w-48"
             />
             <span className="text-[10px] text-muted-foreground">
               {saveStatus}
             </span>
           </div>
           {isAnalyzing && (
-            <div className="flex items-center gap-2 ml-4 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
+            <div className="hidden sm:flex items-center gap-2 ml-2 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
               <Loader2 className="h-3 w-3 animate-spin text-primary" />
               <span className="text-[10px] font-sm text-primary uppercase tracking-wider">
                 ATS Scanning...
@@ -388,124 +399,80 @@ function ResumeBuilderPage() {
           )}
         </div>
 
-        {/* <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+        <div className="flex items-center border gap-1">
+           <Button
+            onClick={() => setIsPreviewOpen(true)}
+            size="sm"
+            variant="ghost"
+            className="h-8 sm:h-9 text-muted-foreground hover:text-white px-2 sm:px-3"
+            title="View Preview"
+          >
+            <Sparkles className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Preview</span>
+          </Button>
+
           <Button
             variant="ghost"
             size="sm"
-            className="w-full sm:w-auto text-muted-foreground hover:text-white bg-white/5 sm:bg-transparent"
+            className="text-muted-foreground hover:text-white"
             onClick={() => setChangeTemplateOpen(true)}
+            title="Change Template"
+            aria-label="Change Template"
           >
-            Change Template
+            <LayoutTemplate className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Template</span>
           </Button>
 
           <Button
-            variant="ghost"
             size="sm"
-            className="w-full sm:w-auto text-muted-foreground hover:text-white bg-white/5 sm:bg-transparent"
+            className="hover:bg-primary/90 text-primary bg-transparent"
             onClick={handleSaveClick}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            <span>Save</span>
-          </Button>
-
-          <SaveFileDialog
-            open={saveDialogOpen}
-            onOpenChange={setSaveDialogOpen}
-            onSave={onSaveFile}
-            defaultName={resumeTitle}
             title="Save Resume"
-            isLoading={saveStatus === "Saving..."}
-          />
-        </div> */}
-
-        
-<div className="flex items-center justify-between w-full mt-2">
-  <div className="flex items-center gap-2 w-full sm:w-auto">
-
-    {/* Change Template */}
-    <Button
-      variant="ghost"
-      size="icon"
-      className="
-        flex-shrink-0 
-        ml-30
-        mb-3
-        bg-white/5 sm:bg-transparent
-        text-muted-foreground hover:text-white
-        w-9 h-9 sm:w-10 sm:h-10
-      "
-      onClick={() => setChangeTemplateOpen(true)}
-    >
-      <LayoutTemplate className="h-5  w-5" />
-    </Button>
-
-    {/* Save */}
-    <Button
-      variant="ghost"
-      size="icon"
-      className="
-        flex-shrink-0
-        mb-3
-        bg-white/5 sm:bg-transparent
-        text-muted-foreground hover:text-white
-        w-9 h-9 sm:w-10 sm:h-10
-      "
-      onClick={handleSaveClick}
-    >
-      <Save className="h-5 w-5" />
-    </Button>
-
-  </div>
-
-  {/* ATS Scan (auto adjust) */}
-  {/* <div className="ml-2 flex items-center">
-    <span
-      className="
-        text-[10px] sm:text-xs
-        px-2 py-1
-        rounded-md
-        bg-teal-500/10 text-teal-400
-        whitespace-nowrap
-      "
-    >
-      ATS Scan
-    </span>
-  </div> */}
-
-  <SaveFileDialog
-    open={saveDialogOpen}
-    onOpenChange={setSaveDialogOpen}
-    onSave={onSaveFile}
-    defaultName={resumeTitle}
-    title="Save Resume"
-    isLoading={saveStatus === "Saving..."}
-  />
-</div>
+            aria-label="Save Resume"
+          >
+            <Save className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Save</span>
+          </Button>
+          
+          {/* <Button
+            size="sm"
+            variant="outline"
+            className="border-white/10 hover:bg-white/5"
+            onClick={handleDownload}
+            title="Download PDF"
+            aria-label="Download PDF"
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">PDF</span>
+          </Button> */}
+        </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden">
         {/* === LEFT: EDITOR === */}
-        <div
-          className={cn(
-            "w-full lg:w-1/2 overflow-y-auto p-6 pb-32 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent custom-scrollbar",
-            mobilePreviewOpen ? "hidden lg:block" : "block",
-          )}
-        >
-          <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center justify-between mb-8 md:hidden">
-              <h1 className="text-xl font-bold">Resume Editor</h1>
-              <Button
-                size="sm"
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 border-0"
-              >
-                <Sparkles className="h-4 w-4" />
-              </Button>
-            </div>
+        <div className="w-full lg:w-1/2 overflow-y-auto bg-[#0a0a0a] border-r border-white/5 custom-scrollbar">
+          <div className="max-w-2xl mx-auto p-4 md:p-8 space-y-8 pb-32">
+            {/* Template Selector */}
+            <ChangeTemplateDialog
+              currentTemplate={template}
+              onSelect={(id) => setTemplate(id)}
+              open={changeTemplateOpen}
+              onOpenChange={setChangeTemplateOpen}
+            />
+
+            <SaveFileDialog
+              open={saveDialogOpen}
+              onOpenChange={setSaveDialogOpen}
+              onSave={onSaveFile}
+              defaultName={resumeTitle}
+              title="Save Resume"
+              isLoading={saveStatus === "Saving..."}
+            />
 
             {/* Personal Info */}
             <FormSection title="Personal Information" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="md:col-span-2 space-y-2">
                   <label className="text-xs font-medium text-muted-foreground uppercase">
                     Full Name
                   </label>
@@ -518,7 +485,7 @@ function ResumeBuilderPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground uppercase">
-                    Email Address
+                    Email
                   </label>
                   <Input
                     value={data.email}
@@ -529,16 +496,16 @@ function ResumeBuilderPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground uppercase">
-                    Phone Number
+                    Phone
                   </label>
                   <Input
                     value={data.phone}
                     onChange={(e) => updateField("phone", e.target.value)}
                     className="bg-black/20 border-white/10"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+1 234 567 890"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="md:col-span-2 space-y-2">
                   <label className="text-xs font-medium text-muted-foreground uppercase">
                     Location
                   </label>
@@ -1026,17 +993,17 @@ function ResumeBuilderPage() {
         <div
           className={cn(
             "w-full lg:w-1/2 bg-[#020202] p-4 lg:p-8 overflow-y-auto flex justify-center custom-scrollbar",
-            mobilePreviewOpen
+            isPreviewOpen
               ? "block fixed inset-0 z-[60] pt-20"
               : "hidden lg:flex",
           )}
         >
-          {mobilePreviewOpen && (
+          {isPreviewOpen && (
             <Button
               variant="ghost"
               size="icon"
               className="absolute top-4 right-4 z-50 h-10 w-10 bg-white/10 hover:bg-white/20 rounded-full"
-              onClick={() => setMobilePreviewOpen(false)}
+              onClick={() => setIsPreviewOpen(false)}
             >
               <Trash2 className="h-5 w-5" />
             </Button>
@@ -1063,10 +1030,10 @@ function ResumeBuilderPage() {
         <div className="lg:hidden fixed bottom-6 right-6 z-50">
           <Button
             size="lg"
-            onClick={() => setMobilePreviewOpen(!mobilePreviewOpen)}
+            onClick={() => setIsPreviewOpen(!isPreviewOpen)}
             className="rounded-full h-14 w-14 shadow-xl bg-indigo-600 hover:bg-indigo-700 text-white"
           >
-            {mobilePreviewOpen ? (
+            {isPreviewOpen ? (
               <ChevronLeft className="h-6 w-6" />
             ) : (
               <Eye className="h-6 w-6" />

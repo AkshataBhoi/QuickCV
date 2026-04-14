@@ -19,9 +19,22 @@ const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
             }
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setOpen(false);
+            }
+        };
+
+        if (open) {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("keydown", handleEsc);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEsc);
+        };
+    }, [open]);
 
     return (
         <DropdownMenuContext.Provider value={{ open, setOpen }}>

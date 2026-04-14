@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 
 interface UploadCardProps {
   onFileSelect: (file: File) => void;
-  isUploading: boolean;
-  uploadProgress: number;
+  status: "idle" | "uploading" | "success" | "error";
+  progress: number;
 }
 
-export function UploadCard({ onFileSelect, isUploading, uploadProgress }: UploadCardProps) {
+export function UploadCard({ onFileSelect, status, progress }: UploadCardProps) {
+  const isUploading = status === "uploading";
+  const uploadProgress = progress;
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export function UploadCard({ onFileSelect, isUploading, uploadProgress }: Upload
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`relative group rounded-3xl border-2 border-dashed transition-all duration-300 p-12 text-center overflow-hidden
+        className={`relative group rounded-3xl border-2 border-dashed transition-all duration-300 p-8 text-center overflow-hidden
           ${isDragging ? "border-indigo-500 bg-indigo-500/5 shadow-[0_0_30px_rgba(99,102,241,0.2)]" : "border-white/10 bg-black/40 hover:border-white/20"}
           ${isUploading ? "pointer-events-none opacity-80" : "cursor-pointer"}
         `}

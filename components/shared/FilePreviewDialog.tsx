@@ -65,13 +65,13 @@ export function FilePreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col bg-[#0f111a] border-white/10 text-white p-0 overflow-hidden shadow-2xl">
-        <DialogHeader className="px-6 py-4 border-b border-white/10 flex flex-row items-center justify-between shrink-0">
-          <DialogTitle>{file.name}</DialogTitle>
-          <div className="ml-auto mr-8 flex items-center gap-2">
+      <DialogContent className="w-[95%] sm:max-w-4xl h-[70vh] sm:h-[90vh] flex flex-col bg-[#0f111a] border-white/10 text-white p-0 mt-10 overflow-hidden shadow-2xl rounded-2xl sm:rounded-3xl">
+        <DialogHeader className="px-4 sm:px-6 py-2 sm:py-4 border-b border-white/10 flex flex-row items-center justify-between shrink-0">
+          <DialogTitle className="text-xs sm:text-xl truncate max-w-[120px] sm:max-w-none">{file.name}</DialogTitle>
+          <div className="ml-auto mr-8 flex items-center gap-1 sm:gap-2">
             {isCoverLetter && user.accountType !== "premium" && (
-              <span className="text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
-                Premium Only
+              <span className="text-[8px] sm:text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hidden sm:inline-block">
+                Premium
               </span>
             )}
 
@@ -95,15 +95,15 @@ export function FilePreviewDialog({
                 // Open print page (it will read from storage)
                 window.open("/print/resume", "_blank");
               }}
-              className="text-primary text-black"
+              className="text-primary bg-trasparent h-7 sm:h-9 text-[10px] sm:text-sm px-2 sm:px-4"
             >
-              <Download className="h-4 w-4 lg:mr-2" />
-              <span className="hidden lg:inline">Download PDF</span>
+              <Download className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline">PDF</span>
             </Button>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-zinc-900/50 relative">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-8 bg-zinc-900/50 relative custom-scrollbar">
           {!isClient && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-zinc-900/80 backdrop-blur-sm">
               <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
@@ -132,7 +132,7 @@ export function FilePreviewDialog({
           )}
 
           {isClient && (isResume || isCoverLetter) && file.data && (
-            <div className="flex justify-center">
+            <div className="flex justify-center h-full items-start pt-2 pb-10">
               <div
                 ref={printRef}
                 style={{
@@ -142,17 +142,17 @@ export function FilePreviewDialog({
                   backgroundColor: "#ffffff",
                   color: "#000000",
                 }}
-                className="pdf-safe shadow-2xl p-4 md:p-8 scale-90 sm:scale-100 origin-top"
+                className="pdf-safe shadow-2xl p-4 md:p-8 scale-[0.4] min-[400px]:scale-[0.5] sm:scale-[0.75] md:scale-90 lg:scale-100 origin-top mb-8"
               >
                 <div className="w-full">
                   {isResume ? (
                     <ResumePreview
-                      data={file.data}
+                      data={file.data.content || file.data}
                       template={file.template || "clean"}
                     />
                   ) : (
                     <CoverLetterPreview
-                      data={file.data}
+                      data={file.data.content || file.data}
                       template={(file.template as any) || "clean"}
                     />
                   )}

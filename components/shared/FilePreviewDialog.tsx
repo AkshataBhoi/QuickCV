@@ -6,11 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ResumePreview } from "@/components/builder/ResumePreview";
+import { ViewRenderer } from "@/components/shared/ViewRenderer";
 import { Button } from "@/components/ui/button";
 import { useRef, useState, useEffect } from "react";
 import { useUser } from "@/components/providers/user-provider";
-import { CoverLetterPreview } from "@/components/builder/CoverLetterPreview";
 import { X, ExternalLink, Download, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -86,7 +85,7 @@ export function FilePreviewDialog({
 
                 // Use LocalStorage to pass data (Url length safe)
                 const payload = {
-                  type: isResume ? "resume" : "cover-letter",
+                  type: isResume ? "resume" : isATS ? "ats" : "cover-letter",
                   template: file.template || "clean",
                   data: file.data
                 };
@@ -135,27 +134,14 @@ export function FilePreviewDialog({
             <div className="flex justify-center h-full items-start pt-2 pb-10">
               <div
                 ref={printRef}
-                style={{
-                  width: "100%",
-                  maxWidth: "210mm",
-                  minHeight: "297mm",
-                  backgroundColor: "#ffffff",
-                  color: "#000000",
-                }}
                 className="pdf-safe shadow-2xl p-4 md:p-8 scale-[0.4] min-[400px]:scale-[0.5] sm:scale-[0.75] md:scale-90 lg:scale-100 origin-top mb-8"
               >
                 <div className="w-full">
-                  {isResume ? (
-                    <ResumePreview
-                      data={file.data.content || file.data}
-                      template={file.template || "clean"}
-                    />
-                  ) : (
-                    <CoverLetterPreview
-                      data={file.data.content || file.data}
-                      template={(file.template as any) || "clean"}
-                    />
-                  )}
+                  <ViewRenderer 
+                    type={isResume ? "resume" : "cover-letter"} 
+                    data={file.data} 
+                    template={file.template} 
+                  />
                 </div>
               </div>
             </div>

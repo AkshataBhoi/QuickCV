@@ -21,13 +21,14 @@ import apiClient from "@/lib/api/client";
 interface AISummaryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onGenerate: (summary: string) => void;
+    onGenerate: (summary: string, skills?: string[], skillsAction?: "merge" | "replace") => void;
 }
 
 interface GeneratedSummaries {
     version_1: string;
     version_2: string;
     version_3: string;
+    skills?: string[];
 }
 
 export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalProps) {
@@ -40,6 +41,7 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
     const [keySkills, setKeySkills] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedSummaries, setGeneratedSummaries] = useState<GeneratedSummaries | null>(null);
+    const [skillsAction, setSkillsAction] = useState<"merge" | "replace">("merge");
 
     const handleGenerate = async () => {
         if (!jobTitle) return;
@@ -74,14 +76,16 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
     };
 
     const handleSelectSummary = (summary: string) => {
-        onGenerate(summary);
+        onGenerate(summary, generatedSummaries?.skills, skillsAction);
         onClose();
         // Reset state for next time
         setGeneratedSummaries(null);
+        setSkillsAction("merge");
     };
 
     const handleReset = () => {
         setGeneratedSummaries(null);
+        setSkillsAction("merge");
     };
 
     return (
@@ -96,7 +100,7 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
                 generatedSummaries ? "sm:max-w-[900px]" : "sm:max-w-[500px]"
             )}>
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                    <DialogTitle className="flex items-center gap-2 text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-purple-400">
                         <Sparkles className="h-5 w-5 text-indigo-400" />
                         AI Summary Generator
                     </DialogTitle>
@@ -190,7 +194,7 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
                             <div 
                                 key={v.id} 
                                 className={cn(
-                                    "flex flex-col rounded-xl border border-white/10 bg-gradient-to-br p-5 hover:border-white/20 transition-all group",
+                                    "flex flex-col rounded-xl border border-white/10 bg-linear-to-br p-5 hover:border-white/20 transition-all group",
                                     v.color
                                 )}
                             >
@@ -199,7 +203,7 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
                                         {v.title}
                                     </span>
                                 </div>
-                                <p className="text-sm leading-relaxed text-gray-300 mb-6 flex-grow">
+                                <p className="text-sm leading-relaxed text-gray-300 mb-6 grow">
                                     {v.content}
                                 </p>
                                 <Button 
@@ -210,6 +214,43 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
                                 </Button>
                             </div>
                         ))}
+                        
+                        {generatedSummaries.skills && generatedSummaries.skills.length > 0 && (
+                            <div className="col-span-1 md:col-span-3 mt-4 border-t border-white/10 pt-4">
+                                <h3 className="text-sm font-bold text-white mb-3">Extracted Technical Skills</h3>
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {generatedSummaries.skills.map((skill, idx) => (
+                                        <span key={idx} className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-muted-foreground">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="flex items-center gap-4 bg-black/20 p-3 rounded-lg border border-white/5">
+                                    <label className="text-xs text-muted-foreground flex items-center gap-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="skillsAction" 
+                                            value="replace" 
+                                            checked={skillsAction === "replace"} 
+                                            onChange={() => setSkillsAction("replace")} 
+                                            className="accent-indigo-500" 
+                                        />
+                                        Replace Skills Completely
+                                    </label>
+                                    <label className="text-xs text-muted-foreground flex items-center gap-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="skillsAction" 
+                                            value="merge" 
+                                            checked={skillsAction === "merge"} 
+                                            onChange={() => setSkillsAction("merge")} 
+                                            className="accent-indigo-500" 
+                                        />
+                                        Merge With Existing Skills
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -233,7 +274,7 @@ export function AISummaryModal({ isOpen, onClose, onGenerate }: AISummaryModalPr
                         <Button
                             onClick={handleGenerate}
                             disabled={!jobTitle || isGenerating}
-                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/20 px-8"
+                            className="bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/20 px-8"
                         >
                             {isGenerating ? (
                                 <>

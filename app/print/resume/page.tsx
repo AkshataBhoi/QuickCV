@@ -2,8 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ResumePreview } from "@/components/builder/ResumePreview";
-import { CoverLetterPreview } from "@/components/builder/CoverLetterPreview";
+import { ViewRenderer } from "@/components/shared/ViewRenderer";
 import apiClient from "@/lib/api/client";
 
 function PrintContent() {
@@ -19,8 +18,24 @@ function PrintContent() {
         const response = await apiClient.get(`/api/resume/${id}/print`);
         const result = response.data;
         if (result.data) {
-          setData(result.data.content);
-          setType("resume");
+          let finalType = result.data.type || "resume";
+          let finalData = result.data.content;
+
+          // If it's an ATS scan, fetch the actual ATS report
+          if (result.data.status === "ATS_SCAN" || finalType === "ATS Scan") {
+            try {
+              const atsRes = await apiClient.get(`/api/ats/report/${id}/latest`);
+              if (atsRes.data && atsRes.data.data) {
+                finalData = atsRes.data.data;
+                finalType = "ats";
+              }
+            } catch (e) {
+              console.error("Failed to fetch ATS report for print", e);
+            }
+          }
+
+          setData(finalData);
+          setType(finalType);
           setTemplate(result.data.templateId || "clean");
         } else {
           setError(result.message || "Failed to load document.");
@@ -71,16 +86,18 @@ function PrintContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (data) {
+    if (data && type) {
+      console.log("Export Data:", data);
+      // Delay printing to allow components and fonts to fully render
       const timer = setTimeout(() => {
         window.print();
-      }, 1000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [data]);
+  }, [data, type]);
 
   if (error) return <div className="p-20 text-red-500 bg-white">{error}</div>;
-  if (!data) return <div className="p-20 bg-zinc-950 text-white">Loading preview...</div>;
+  if (!data) return <div className="p-20 bg-zinc-950 text-white">Loading document data...</div>;
 
   return (
     <div className="min-h-screen w-full bg-zinc-800/50 flex justify-center py-12 print:bg-white print:p-0">
@@ -93,11 +110,7 @@ function PrintContent() {
       `}</style>
 
       <div className="relative bg-white shadow-2xl w-[210mm] min-h-[297mm] print:shadow-none print:w-full print:m-0">
-        {type === "resume" ? (
-          <ResumePreview data={data} template={template} />
-        ) : (
-          <CoverLetterPreview data={data} template={template} />
-        )}
+        <ViewRenderer type={type as "resume" | "cover-letter" | "ats"} data={data} template={template} isPrintMode={true} />
       </div>
     </div>
   );

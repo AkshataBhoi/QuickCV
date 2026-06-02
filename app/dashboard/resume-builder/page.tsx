@@ -21,6 +21,7 @@ import { TemplateSelector } from "@/components/builder/TemplateSelector";
 import { TEMPLATES, getTemplateById, TemplateId } from "@/lib/templates.config";
 import { ChangeTemplateDialog } from "@/components/builder/ChangeTemplateDialog";
 import { FormSection } from "@/components/builder/FormSection";
+import { SkillGapAnalysis } from "@/components/builder/SkillGapAnalysis";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useUser } from "@/components/providers/user-provider";
@@ -626,6 +627,8 @@ function ResumeBuilderPage() {
                                         <Sparkles className="h-3 w-3 mr-1" /> Suggest Skills
                                     </Button> */}
                 </div>
+                
+                <SkillGapAnalysis resumeSkills={data.skills} />
               </div>
             </FormSection>
 
@@ -1080,9 +1083,20 @@ function ResumeBuilderPage() {
       <AISummaryModal
         isOpen={summaryModalOpen}
         onClose={() => setSummaryModalOpen(false)}
-        onGenerate={(summary) => {
+        onGenerate={(summary, skills, skillsAction) => {
           updateField("summary", summary);
-          toast.success("Summary optimized with AI!");
+          if (skills && skills.length > 0) {
+            if (skillsAction === "replace") {
+              updateField("skills", skills);
+              toast.success("Summary and Skills replaced with AI suggestions!");
+            } else {
+              const uniqueSkills = Array.from(new Set([...data.skills, ...skills]));
+              updateField("skills", uniqueSkills);
+              toast.success(`Summary optimized and ${skills.length} skills added!`);
+            }
+          } else {
+            toast.success("Summary optimized with AI!");
+          }
         }}
       />
 

@@ -28,7 +28,7 @@ export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: 
     const { user } = useUser();
     const [prompt, setPrompt] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+    const [suggestedSkills, setSuggestedSkills] = useState<{ [key: string]: string[] } | null>(null);
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
     const handleAnalyze = async () => {
@@ -43,7 +43,7 @@ export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: 
 
             const { data } = response;
 
-            setSuggestedSkills(data.skills || []);
+            setSuggestedSkills(data || {});
             toast.success("Skills suggested by AI!");
         } catch (error: any) {
             console.error("Error extracting skills:", error);
@@ -69,15 +69,21 @@ export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: 
         onClose();
         // Reset state for next time
         setPrompt("");
-        setSuggestedSkills([]);
+        setSuggestedSkills(null);
         setSelectedSkills([]);
     };
 
     const handleAddAll = () => {
-        onAddSkills(suggestedSkills);
+        let allSkills: string[] = [];
+        if (suggestedSkills) {
+            Object.values(suggestedSkills).forEach(arr => {
+                if (Array.isArray(arr)) allSkills = [...allSkills, ...arr];
+            });
+        }
+        onAddSkills(allSkills);
         onClose();
         setPrompt("");
-        setSuggestedSkills([]);
+        setSuggestedSkills(null);
         setSelectedSkills([]);
     };
 
@@ -95,7 +101,7 @@ export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: 
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto py-4 space-y-6 custom-scrollbar">
-                    {!suggestedSkills.length ? (
+                    {!suggestedSkills ? (
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Job Description</label>
@@ -130,37 +136,49 @@ export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: 
                                 </Button>
                             </div>
 
-                            <div className="flex flex-wrap gap-2">
-                                {suggestedSkills.map((skill) => {
-                                    const isSelected = selectedSkills.includes(skill);
-                                    const isAlreadyAdded = existingSkills.includes(skill);
-
+                            <div className="space-y-6">
+                                {Object.entries(suggestedSkills).map(([category, skills]) => {
+                                    if (!Array.isArray(skills) || skills.length === 0) return null;
                                     return (
-                                        <button
-                                            key={skill}
-                                            onClick={() => !isAlreadyAdded && toggleSkill(skill)}
-                                            disabled={isAlreadyAdded}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-2 border ${isAlreadyAdded
-                                                ? "bg-white/5 border-white/5 text-muted-foreground cursor-not-allowed opacity-50"
-                                                : isSelected
-                                                    ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                                                    : "bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20"
-                                                }`}
-                                        >
-                                            {skill}
-                                            {isAlreadyAdded ? (
-                                                <Check className="h-3 w-3" />
-                                            ) : isSelected ? (
-                                                <Plus className="h-3 w-3 rotate-45" />
-                                            ) : (
-                                                <Plus className="h-3 w-3" />
-                                            )}
-                                        </button>
+                                        <div key={category} className="space-y-3">
+                                            <h4 className="text-xs font-bold uppercase tracking-widest text-emerald-400/70 border-b border-emerald-500/10 pb-1">
+                                                {category}
+                                            </h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {skills.map((skill) => {
+                                                    const isSelected = selectedSkills.includes(skill);
+                                                    const isAlreadyAdded = existingSkills.includes(skill);
+
+                                                    return (
+                                                        <button
+                                                            key={skill}
+                                                            onClick={() => !isAlreadyAdded && toggleSkill(skill)}
+                                                            disabled={isAlreadyAdded}
+                                                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-2 border ${isAlreadyAdded
+                                                                ? "bg-white/5 border-white/5 text-muted-foreground cursor-not-allowed opacity-50"
+                                                                : isSelected
+                                                                    ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+                                                                    : "bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20"
+                                                                }`}
+                                                        >
+                                                            {skill}
+                                                            {isAlreadyAdded ? (
+                                                                <Check className="h-3 w-3" />
+                                                            ) : isSelected ? (
+                                                                <Plus className="h-3 w-3 rotate-45" />
+                                                            ) : (
+                                                                <Plus className="h-3 w-3" />
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     );
                                 })}
                             </div>
 
-                            <p className="text-[10px] text-muted-foreground text-center italic">
+                            <p className="text-[10px] text-muted-foreground text-center italic mt-6">
                                 Click on the chips to select individual skills or click "Add All"
                             </p>
                         </div>
@@ -168,9 +186,9 @@ export function AISkillsModal({ isOpen, onClose, onAddSkills, existingSkills }: 
                 </div>
 
                 <DialogFooter className="pt-4 border-t border-white/5">
-                    {suggestedSkills.length > 0 ? (
+                    {suggestedSkills ? (
                         <>
-                            <Button variant="ghost" onClick={() => setSuggestedSkills([])} className="text-xs">
+                            <Button variant="ghost" onClick={() => setSuggestedSkills(null)} className="text-xs">
                                 Back to Edit
                             </Button>
                             <Button

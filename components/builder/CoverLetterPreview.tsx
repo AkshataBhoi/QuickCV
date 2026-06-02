@@ -34,7 +34,7 @@ export function CoverLetterPreview({ data, template }: CoverLetterPreviewProps) 
     return (
         <div className="w-full h-full bg-white text-black overflow-y-auto print:overflow-visible" id="cl-preview">
             <div className={cn(
-                "aspect-[210/297] w-full min-h-[1000px] mx-auto bg-white p-[15mm] shadow-xl print:shadow-none transition-all duration-300 flex flex-col",
+                "w-full min-h-[1000px] mx-auto bg-white p-[15mm] shadow-xl print:shadow-none transition-all duration-300 flex flex-col",
                 style === "clean" && "font-serif",
                 style === "modern" && "font-sans",
                 style === "minimal" && "font-mono"
@@ -68,10 +68,10 @@ export function CoverLetterPreview({ data, template }: CoverLetterPreviewProps) 
                             </div>
                         </div>
 
-                        <footer className="mt-8 pt-8 border-t border-gray-200">
+                        {/* <footer className="mt-8 pt-8 border-t border-gray-200">
                             <p className="text-sm font-bold">Sincerely,</p>
                             <p className="text-lg mt-2 font-serif italic text-gray-900">{data.fullName || "Your Name"}</p>
-                        </footer>
+                        </footer> */}
                     </div>
                 )}
 

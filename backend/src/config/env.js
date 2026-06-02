@@ -13,7 +13,7 @@ console.log("ENV FILE LOADED FROM:", path.resolve(__dirname, "../../.env"));
 
 dotenv.config();
 
-if (!process.env.OPENAI_API_KEY) {
-  console.error("❌ OPENAI_API_KEY not found in environment");
+if (!process.env.GROQ_API_KEY) {
+  console.log(process.env.GROQ_API_KEY);
   process.exit(1);
 }

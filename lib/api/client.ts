@@ -32,6 +32,8 @@ if (typeof window !== 'undefined') {
 apiClient.interceptors.request.use(async (config) => {
   try {
     const auth = getAuthInstance();
+    //Checking Authentication 
+      console.log("AUTH USER:", auth?.currentUser);
     // Only attempt to get token if auth is initialized and we have a user
     if (auth && auth.currentUser) {
       const token = await auth.currentUser.getIdToken();

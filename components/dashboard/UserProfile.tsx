@@ -79,7 +79,7 @@ export function UserProfile() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
-                className="w-56 border border-white/10 text-white z-[60]"
+                className="w-56 border border-white/10 text-white"
                 align="end"
                 style={{ backgroundColor: "#0f111a" }}
             >

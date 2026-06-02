@@ -112,7 +112,7 @@ export const getResumeForPrint = async (req, res) => {
         const { id } = req.params;
 
         // Only return fields needed for rendering, no sensitive owner info
-        const resume = await Resume.findById(id).select("content templateId title type isDraft");
+        const resume = await Resume.findById(id).select("content templateId title type isDraft status");
 
         if (!resume) {
             return res.status(404).json({ success: false, message: "Resume not found" });

@@ -45,11 +45,13 @@ export default function CoverLetterPage() {
     city: profileUser.location,
     role: "Senior Product Engineer",
     company: "TechFlow Systems",
-    hiringManager: "Sarah Connor",
+    hiringManager: "",
     body: "I am writing to express my strong interest in the Senior Product Engineer role at TechFlow Systems...",
   });
 
   const [generating, setGenerating] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
+  const [tone, setTone] = useState("Professional");
 
   const handleGenerate = async () => {
     if (!isPremium) return;
@@ -59,23 +61,38 @@ export default function CoverLetterPage() {
         return;
     }
 
+    if (!data.role) {
+      toast.error("Target Role is required to generate a cover letter.");
+      return;
+    }
+
     setGenerating(true);
-    // Simulate API call for generation and credit deduction
-    setTimeout(async () => {
-      setData((prev) => ({
-        ...prev,
-        body: `Dear ${prev.hiringManager || "Hiring Manager"
-          },\n\nI am writing to express my strong interest in the ${prev.role
-          } position at ${prev.company}. Having followed ${prev.company
-          }'s work for years, I was excited to see an opening that perfectly aligns with my background in scalable cloud architecture and user-centric design.\n\nIn my previous role at Innovate Create, I led the redesign of our core mobile app, resulting in a 20% increase in user retention. I am confident I can bring this same level of strategic thinking and execution to your team.\n\nThank you for considering my application. I look forward to the possibility of discussing how my skills could contribute to ${prev.company
-          }'s continued success.\n\nSincerely,\n${prev.fullName}`,
-      }));
+    try {
+      const response = await apiClient.post('/api/ai/cover-letter', {
+        jobTitle: data.role,
+        companyName: data.company,
+        jobDescription: jobDescription,
+        tone: tone
+      });
+
+      const resData = response.data;
+      if (resData.content) {
+        setData((prev) => ({
+          ...prev,
+          body: resData.content,
+        }));
+        
+        await updateUser({ coverLetterCredits: profileUser.coverLetterCredits - 1 });
+        toast.success("Cover letter generated! 1 credit used.");
+      } else {
+        throw new Error("No content generated");
+      }
+    } catch (error: any) {
+      console.error("Generation error:", error);
+      toast.error(error.response?.data?.message || "Failed to generate cover letter");
+    } finally {
       setGenerating(false);
-      
-      // Update local state credits (in real app, this comes from backend response)
-      await updateUser({ coverLetterCredits: profileUser.coverLetterCredits - 1 });
-      toast.success("Cover letter generated! 1 credit used.");
-    }, 1500);
+    }
   };
 
   const handleUnlock = async () => {
@@ -209,7 +226,7 @@ export default function CoverLetterPage() {
             onClick={() => setIsPreviewOpen(true)}
             size="sm"
             variant="ghost"
-            className="h-8 sm:h-9 text-muted-foreground hover:text-white px-2 sm:px-3"
+            className="h-8 sm:h-9 text-muted-foreground hover:text-white px-2 sm:px-3 lg:hidden"
             title="View Preview"
           >
             <Sparkles className="h-4 w-4 sm:mr-2" />
@@ -258,9 +275,9 @@ export default function CoverLetterPage() {
       </div>
 
       {!isPremium && (
-        <div className="absolute inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-background/60 backdrop-blur-md">
-          <div className="max-w-md w-full bg-[#0f111a] border border-indigo-500/20 rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 text-center shadow-2xl">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-indigo-500/30 transform rotate-3">
+        <div className="absolute inset-0  flex items-center justify-center p-4 sm:p-6 bg-background/60 backdrop-blur-md">
+          <div className="max-w-md w-full bg-[#0f111a] border border-indigo-500/20 rounded-2xl  p-6 sm:p-8 text-center shadow-2xl">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-indigo-500/30 transform rotate-3">
               <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">AI Cover Letter Generator</h2>
@@ -344,18 +361,42 @@ export default function CoverLetterPage() {
 
               <div className="space-y-1.5">
                 <label className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase">
-                  Why this role? (for AI)
+                  Tone
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {["Professional", "Confident", "Modern", "Fresher Friendly"].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTone(t)}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-[10px] sm:text-xs font-medium border transition-all",
+                        tone === t
+                          ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+                          : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"
+                      )}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase">
+                  Job Description & Notes (for AI)
                 </label>
                 <Textarea
-                  placeholder="Mention your key experience or skills relevant to this job..."
-                  className="bg-black/20 border-white/10 min-h-[80px] sm:min-h-[100px] text-sm resize-none"
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Paste the job description or mention your key experience..."
+                  className="bg-black/20 border-white/10  sm:min-h-[100px] text-sm resize-none"
                 />
               </div>
 
               <Button
                 onClick={handleGenerate}
                 disabled={generating}
-                className="w-full h-10 sm:h-12 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/20 border-0 text-sm sm:text-base"
+                className="w-full h-10 sm:h-12 bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/20 border-0 text-sm sm:text-base"
               >
                 <Sparkles className={cn("h-4 w-4 sm:h-5 sm:w-5 mr-2", generating && "animate-spin")} />
                 {generating ? "AI is Writing..." : "Generate Magic Draft"}
